@@ -119,7 +119,16 @@ export function CampaignSetup() {
     historicalData: '30days'
   });
 
-  const [tempInput, setTempInput] = useState('');
+  const [tempInputs, setTempInputs] = useState({
+    brandKeywords: '',
+    productKeywords: '',
+    hashtags: '',
+    excludeKeywords: ''
+  });
+
+  const updateTempInput = (field: string, value: string) => {
+    setTempInputs(prev => ({ ...prev, [field]: value }));
+  };
 
   const updateFormData = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -254,19 +263,19 @@ export function CampaignSetup() {
                   <div className="flex space-x-2">
                     <Input
                       placeholder="Add brand keyword..."
-                      value={tempInput}
-                      onChange={(e) => setTempInput(e.target.value)}
+                      value={tempInputs.brandKeywords}
+                      onChange={(e) => updateTempInput('brandKeywords', e.target.value)}
                       onKeyPress={(e) => {
                         if (e.key === 'Enter') {
-                          addToArray('brandKeywords', tempInput);
-                          setTempInput('');
+                          addToArray('brandKeywords', tempInputs.brandKeywords);
+                          updateTempInput('brandKeywords', '');
                         }
                       }}
                     />
-                    <Button 
+                    <Button
                       onClick={() => {
-                        addToArray('brandKeywords', tempInput);
-                        setTempInput('');
+                        addToArray('brandKeywords', tempInputs.brandKeywords);
+                        updateTempInput('brandKeywords', '');
                       }}
                       size="sm"
                     >
@@ -299,19 +308,19 @@ export function CampaignSetup() {
                   <div className="flex space-x-2">
                     <Input
                       placeholder="Add product keyword..."
-                      value={tempInput}
-                      onChange={(e) => setTempInput(e.target.value)}
+                      value={tempInputs.productKeywords}
+                      onChange={(e) => updateTempInput('productKeywords', e.target.value)}
                       onKeyPress={(e) => {
                         if (e.key === 'Enter') {
-                          addToArray('productKeywords', tempInput);
-                          setTempInput('');
+                          addToArray('productKeywords', tempInputs.productKeywords);
+                          updateTempInput('productKeywords', '');
                         }
                       }}
                     />
-                    <Button 
+                    <Button
                       onClick={() => {
-                        addToArray('productKeywords', tempInput);
-                        setTempInput('');
+                        addToArray('productKeywords', tempInputs.productKeywords);
+                        updateTempInput('productKeywords', '');
                       }}
                       size="sm"
                     >
@@ -344,19 +353,19 @@ export function CampaignSetup() {
                   <div className="flex space-x-2">
                     <Input
                       placeholder="Add hashtag (without #)..."
-                      value={tempInput}
-                      onChange={(e) => setTempInput(e.target.value)}
+                      value={tempInputs.hashtags}
+                      onChange={(e) => updateTempInput('hashtags', e.target.value)}
                       onKeyPress={(e) => {
                         if (e.key === 'Enter') {
-                          addToArray('hashtags', tempInput.replace('#', ''));
-                          setTempInput('');
+                          addToArray('hashtags', tempInputs.hashtags.replace('#', ''));
+                          updateTempInput('hashtags', '');
                         }
                       }}
                     />
-                    <Button 
+                    <Button
                       onClick={() => {
-                        addToArray('hashtags', tempInput.replace('#', ''));
-                        setTempInput('');
+                        addToArray('hashtags', tempInputs.hashtags.replace('#', ''));
+                        updateTempInput('hashtags', '');
                       }}
                       size="sm"
                     >
@@ -389,19 +398,19 @@ export function CampaignSetup() {
                   <div className="flex space-x-2">
                     <Input
                       placeholder="Add keyword to exclude..."
-                      value={tempInput}
-                      onChange={(e) => setTempInput(e.target.value)}
+                      value={tempInputs.excludeKeywords}
+                      onChange={(e) => updateTempInput('excludeKeywords', e.target.value)}
                       onKeyPress={(e) => {
                         if (e.key === 'Enter') {
-                          addToArray('excludeKeywords', tempInput);
-                          setTempInput('');
+                          addToArray('excludeKeywords', tempInputs.excludeKeywords);
+                          updateTempInput('excludeKeywords', '');
                         }
                       }}
                     />
-                    <Button 
+                    <Button
                       onClick={() => {
-                        addToArray('excludeKeywords', tempInput);
-                        setTempInput('');
+                        addToArray('excludeKeywords', tempInputs.excludeKeywords);
+                        updateTempInput('excludeKeywords', '');
                       }}
                       size="sm"
                     >
