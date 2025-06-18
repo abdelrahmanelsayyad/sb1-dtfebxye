@@ -9,8 +9,6 @@ import { motion } from 'framer-motion';
 
 const breadcrumbMap: Record<string, string> = {
   dashboard: 'Dashboard',
-  monitoring: 'Brand Monitoring',
-  products: 'Product Intelligence',
   setup: 'Campaign Setup',
   reports: 'Reports',
 };

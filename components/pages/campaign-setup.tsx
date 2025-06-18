@@ -11,10 +11,8 @@ import {
   Search, 
   Globe,
   Target,
-  Settings,
   Zap,
   Eye,
-  Bell,
   Calendar,
   Hash,
   AtSign,
@@ -30,7 +28,6 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Progress } from '@/components/ui/progress';
 import {
@@ -47,8 +44,7 @@ const steps = [
   { id: 2, title: 'Keywords & Hashtags', icon: Hash, description: 'What to monitor across platforms' },
   { id: 3, title: 'Social Platforms', icon: Smartphone, description: 'Where to listen for mentions' },
   { id: 4, title: 'Geographic & Language', icon: Globe, description: 'Target regions and languages' },
-  { id: 5, title: 'Alerts & Notifications', icon: Bell, description: 'How to stay informed' },
-  { id: 6, title: 'Review & Launch', icon: Zap, description: 'Finalize your campaign' }
+  { id: 5, title: 'Review & Launch', icon: Zap, description: 'Finalize your campaign' }
 ];
 
 const platforms = [
@@ -107,13 +103,6 @@ export function CampaignSetup() {
     languages: ['English'],
     
     
-    // Alerts & Notifications
-    emailAlerts: true,
-    alertFrequency: 'daily',
-    alertThreshold: 'medium',
-    webhookUrl: '',
-    
-    // Advanced Settings
     sentimentTracking: true,
     influencerTracking: true,
     historicalData: '30days'
@@ -664,155 +653,6 @@ export function CampaignSetup() {
         );
 
       case 5:
-        return (
-          <div className="space-y-6">
-            <div className="text-center mb-8">
-              <Bell className="w-16 h-16 text-yellow-600 mx-auto mb-4" />
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                Alerts & Notifications
-              </h2>
-              <p className="text-gray-600 dark:text-gray-400">
-                Configure how you want to be notified about mentions
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Email Alerts */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Bell className="w-5 h-5" />
-                    <span>Email Alerts</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label htmlFor="emailAlerts">Enable Email Alerts</Label>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Receive email notifications for new mentions
-                      </p>
-                    </div>
-                    <Switch
-                      id="emailAlerts"
-                      checked={formData.emailAlerts}
-                      onCheckedChange={(checked) => updateFormData('emailAlerts', checked)}
-                    />
-                  </div>
-
-                  {formData.emailAlerts && (
-                    <>
-                      <div className="space-y-2">
-                        <Label htmlFor="alertFrequency">Alert Frequency</Label>
-                        <Select 
-                          value={formData.alertFrequency} 
-                          onValueChange={(value) => updateFormData('alertFrequency', value)}
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="realtime">Real-time</SelectItem>
-                            <SelectItem value="hourly">Hourly</SelectItem>
-                            <SelectItem value="daily">Daily</SelectItem>
-                            <SelectItem value="weekly">Weekly</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="alertThreshold">Alert Threshold</Label>
-                        <Select 
-                          value={formData.alertThreshold} 
-                          onValueChange={(value) => updateFormData('alertThreshold', value)}
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="all">All mentions</SelectItem>
-                            <SelectItem value="high">High impact only</SelectItem>
-                            <SelectItem value="medium">Medium+ impact</SelectItem>
-                            <SelectItem value="negative">Negative sentiment only</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Advanced Settings */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Settings className="w-5 h-5" />
-                    <span>Advanced Settings</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label htmlFor="sentimentTracking">Sentiment Analysis</Label>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Analyze sentiment of mentions
-                      </p>
-                    </div>
-                    <Switch
-                      id="sentimentTracking"
-                      checked={formData.sentimentTracking}
-                      onCheckedChange={(checked) => updateFormData('sentimentTracking', checked)}
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label htmlFor="influencerTracking">Influencer Tracking</Label>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Identify influential mentions
-                      </p>
-                    </div>
-                    <Switch
-                      id="influencerTracking"
-                      checked={formData.influencerTracking}
-                      onCheckedChange={(checked) => updateFormData('influencerTracking', checked)}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="historicalData">Historical Data</Label>
-                    <Select 
-                      value={formData.historicalData} 
-                      onValueChange={(value) => updateFormData('historicalData', value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="7days">Last 7 days</SelectItem>
-                        <SelectItem value="30days">Last 30 days</SelectItem>
-                        <SelectItem value="90days">Last 90 days</SelectItem>
-                        <SelectItem value="1year">Last year</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="webhookUrl">Webhook URL (Optional)</Label>
-                    <Input
-                      id="webhookUrl"
-                      placeholder="https://your-webhook-url.com"
-                      value={formData.webhookUrl}
-                      onChange={(e) => updateFormData('webhookUrl', e.target.value)}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        );
-
-      case 6:
         return (
           <div className="space-y-6">
             <div className="text-center mb-8">

@@ -39,9 +39,9 @@ export function MentionsFeed() {
     <Card className="h-[600px]">
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
-          Real-time Mentions
-          <Badge variant="secondary" className="bg-green-100 text-green-800">
-            Live
+          Sample Comments
+          <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+            Examples
           </Badge>
         </CardTitle>
       </CardHeader>
@@ -74,10 +74,17 @@ export function MentionsFeed() {
                         {mention.user.verified && (
                           <Badge variant="secondary" className="text-xs">Verified</Badge>
                         )}
-                        <div className={`w-2 h-2 rounded-full ${
-                          mention.sentimentLabel === 'positive' ? 'bg-green-500' :
-                          mention.sentimentLabel === 'negative' ? 'bg-red-500' : 'bg-yellow-500'
-                        }`} />
+                        <div className="flex items-center space-x-1">
+                          <div
+                            className={`w-2 h-2 rounded-full ${
+                              mention.sentimentLabel === 'positive' ? 'bg-green-500' :
+                              mention.sentimentLabel === 'negative' ? 'bg-red-500' : 'bg-yellow-500'
+                            }`}
+                          />
+                          <span className="text-xs capitalize text-gray-500">
+                            {mention.sentimentLabel}
+                          </span>
+                        </div>
                       </div>
                       
                       <p className="text-sm text-gray-900 dark:text-gray-100 mb-3 leading-relaxed">

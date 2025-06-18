@@ -32,7 +32,7 @@ export function MentionVolumeChart() {
                 30D
               </Button>
               <Button variant="default" size="sm">
-                90D
+                60D
               </Button>
               <Button variant="ghost" size="sm">
                 <Download className="w-4 h-4" />
