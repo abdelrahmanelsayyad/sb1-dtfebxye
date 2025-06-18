@@ -9,8 +9,7 @@ import {
   Plus, 
   X, 
   Search, 
-  Globe, 
-  Users, 
+  Globe,
   Target,
   Settings,
   Zap,
@@ -48,9 +47,8 @@ const steps = [
   { id: 2, title: 'Keywords & Hashtags', icon: Hash, description: 'What to monitor across platforms' },
   { id: 3, title: 'Social Platforms', icon: Smartphone, description: 'Where to listen for mentions' },
   { id: 4, title: 'Geographic & Language', icon: Globe, description: 'Target regions and languages' },
-  { id: 5, title: 'Competitors', icon: Users, description: 'Who to benchmark against' },
-  { id: 6, title: 'Alerts & Notifications', icon: Bell, description: 'How to stay informed' },
-  { id: 7, title: 'Review & Launch', icon: Zap, description: 'Finalize your campaign' }
+  { id: 5, title: 'Alerts & Notifications', icon: Bell, description: 'How to stay informed' },
+  { id: 6, title: 'Review & Launch', icon: Zap, description: 'Finalize your campaign' }
 ];
 
 const platforms = [
@@ -108,8 +106,6 @@ export function CampaignSetup() {
     targetCountries: ['United States'],
     languages: ['English'],
     
-    // Competitors
-    competitors: [],
     
     // Alerts & Notifications
     emailAlerts: true,
@@ -662,84 +658,6 @@ export function CampaignSetup() {
         return (
           <div className="space-y-6">
             <div className="text-center mb-8">
-              <Users className="w-16 h-16 text-orange-600 mx-auto mb-4" />
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                Competitor Analysis
-              </h2>
-              <p className="text-gray-600 dark:text-gray-400">
-                Add competitors to benchmark your performance against
-              </p>
-            </div>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Add Competitors</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex space-x-2">
-                  <Input
-                    placeholder="Enter competitor name..."
-                    value={tempInput}
-                    onChange={(e) => setTempInput(e.target.value)}
-                    onKeyPress={(e) => {
-                      if (e.key === 'Enter') {
-                        addToArray('competitors', tempInput);
-                        setTempInput('');
-                      }
-                    }}
-                  />
-                  <Button 
-                    onClick={() => {
-                      addToArray('competitors', tempInput);
-                      setTempInput('');
-                    }}
-                    size="sm"
-                  >
-                    <Plus className="w-4 h-4" />
-                  </Button>
-                </div>
-
-                {formData.competitors.length > 0 && (
-                  <div className="space-y-3">
-                    <h4 className="font-medium">Your Competitors:</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      {formData.competitors.map((competitor, index) => (
-                        <div key={index} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                          <div className="flex items-center space-x-3">
-                            <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center text-white font-bold">
-                              {competitor.substring(0, 2).toUpperCase()}
-                            </div>
-                            <span className="font-medium">{competitor}</span>
-                          </div>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => removeFromArray('competitors', competitor)}
-                          >
-                            <X className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {formData.competitors.length === 0 && (
-                  <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                    <Users className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                    <p>No competitors added yet</p>
-                    <p className="text-sm">Add competitors to enable benchmarking</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        );
-
-      case 6:
-        return (
-          <div className="space-y-6">
-            <div className="text-center mb-8">
               <Bell className="w-16 h-16 text-yellow-600 mx-auto mb-4" />
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
                 Alerts & Notifications
@@ -885,7 +803,7 @@ export function CampaignSetup() {
           </div>
         );
 
-      case 7:
+      case 6:
         return (
           <div className="space-y-6">
             <div className="text-center mb-8">
@@ -947,10 +865,6 @@ export function CampaignSetup() {
                   <div className="flex justify-between">
                     <span className="text-gray-600 dark:text-gray-400">Languages:</span>
                     <span className="font-medium">{formData.languages.length}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-400">Competitors:</span>
-                    <span className="font-medium">{formData.competitors.length}</span>
                   </div>
                 </CardContent>
               </Card>

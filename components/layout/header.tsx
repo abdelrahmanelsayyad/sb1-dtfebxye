@@ -11,7 +11,6 @@ const breadcrumbMap: Record<string, string> = {
   dashboard: 'Dashboard',
   monitoring: 'Brand Monitoring',
   products: 'Product Intelligence',
-  competitors: 'Competitors',
   setup: 'Campaign Setup',
   reports: 'Reports',
 };

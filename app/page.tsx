@@ -6,14 +6,12 @@ import { MainLayout } from '@/components/layout/main-layout';
 import { Dashboard } from '@/components/pages/dashboard';
 import { ProductIntelligence } from '@/components/pages/product-intelligence';
 import { BrandMonitoring } from '@/components/pages/brand-monitoring';
-import { Competitors } from '@/components/pages/competitors';
 import { CampaignSetup } from '@/components/pages/campaign-setup';
 
 const pageComponents = {
   dashboard: Dashboard,
   monitoring: BrandMonitoring,
   products: ProductIntelligence,
-  competitors: Competitors,
   setup: CampaignSetup,
   reports: () => <div className="p-6"><h1 className="text-2xl font-bold">Reports - Coming Soon</h1></div>,
   settings: () => <div className="p-6"><h1 className="text-2xl font-bold">Settings - Coming Soon</h1></div>,
