@@ -724,7 +724,7 @@ export function CampaignSetup() {
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
                     <Hash className="w-5 h-5" />
-                    <span>Monitoring Keywords</span>
+                    <span>Keywords</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
