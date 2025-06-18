@@ -27,19 +27,15 @@ export function Dashboard() {
       <KPICards />
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column - Mentions Feed */}
-        <div className="lg:col-span-4">
+        <div className="lg:col-span-1">
           <MentionsFeed />
         </div>
         
-        {/* Center Column - Mention Volume Chart */}
-        <div className="lg:col-span-5">
+        {/* Right Columns - Charts in vertical stack */}
+        <div className="lg:col-span-2 space-y-6">
           <MentionVolumeChart />
-        </div>
-        
-        {/* Right Column - Platform Distribution */}
-        <div className="lg:col-span-3">
           <PlatformDistribution />
         </div>
       </div>
