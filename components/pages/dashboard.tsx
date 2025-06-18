@@ -6,8 +6,11 @@ import { KPICards } from '@/components/dashboard/kpi-cards';
 import { MentionsFeed } from '@/components/dashboard/mentions-feed';
 import { MentionVolumeChart } from '@/components/dashboard/charts/mention-volume-chart';
 import { PlatformDistribution } from '@/components/dashboard/charts/platform-distribution';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
+import { useAppStore } from '@/lib/store';
 
 export function Dashboard() {
+  const { brands, selectedBrand, setSelectedBrand } = useAppStore();
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
@@ -23,6 +26,21 @@ export function Dashboard() {
           insights across all your monitored brands and products
         </p>
       </motion.div>
+
+      <div className="max-w-xs">
+        <Select value={selectedBrand ?? ''} onValueChange={setSelectedBrand}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select Campaign" />
+          </SelectTrigger>
+          <SelectContent>
+            {brands.map((b) => (
+              <SelectItem key={b.id} value={b.id}>
+                {b.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
 
       {/* KPI Cards */}
       <KPICards />

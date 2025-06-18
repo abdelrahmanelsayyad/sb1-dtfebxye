@@ -12,6 +12,7 @@ export interface User {
 
 export interface Mention {
   id: string;
+  brandId: string;
   platform: Platform;
   user: User;
   content: string;
