@@ -23,7 +23,7 @@ export function Dashboard() {
           Social Listening Dashboard
         </h1>
         <p className="text-gray-600 dark:text-gray-400">
-          Insights across all your monitored brands and products
+          Insights across all your tracked brands and products
         </p>
       </motion.div>
 

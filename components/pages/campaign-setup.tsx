@@ -42,7 +42,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 
 const steps = [
   { id: 1, title: 'Brand Details', icon: Building, description: 'Basic information about your brand' },
-  { id: 2, title: 'Keywords & Hashtags', icon: Hash, description: 'What to monitor across platforms' },
+  { id: 2, title: 'Keywords & Hashtags', icon: Hash, description: 'What to track across platforms' },
   { id: 3, title: 'Social Platforms', icon: Smartphone, description: 'Where to listen for mentions' },
   { id: 4, title: 'Geographic & Language', icon: Globe, description: 'Target regions and languages' },
   { id: 5, title: 'Review & Launch', icon: Zap, description: 'Finalize your campaign' }
@@ -236,7 +236,7 @@ export function CampaignSetup() {
                 Keywords & Hashtags
               </h2>
               <p className="text-gray-600 dark:text-gray-400">
-                Define what to monitor across social media platforms
+                Define what to track across social media platforms
               </p>
             </div>
 
@@ -433,7 +433,7 @@ export function CampaignSetup() {
                 Social Platforms
               </h2>
               <p className="text-gray-600 dark:text-gray-400">
-                Choose which platforms to monitor for mentions
+                Choose which platforms to track for mentions
               </p>
             </div>
 
@@ -543,7 +543,7 @@ export function CampaignSetup() {
                 Geographic & Language Settings
               </h2>
               <p className="text-gray-600 dark:text-gray-400">
-                Define your target regions and languages for monitoring
+                Define your target regions and languages for tracking
               </p>
             </div>
 
@@ -824,7 +824,7 @@ export function CampaignSetup() {
               Create Social Listening Campaign
             </h1>
             <p className="text-xl text-gray-600 dark:text-gray-400">
-              Set up comprehensive monitoring for your brand across all social platforms
+              Set up comprehensive tracking for your brand across all social platforms
             </p>
           </motion.div>
 
