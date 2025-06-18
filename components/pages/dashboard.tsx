@@ -35,7 +35,7 @@ export function Dashboard() {
         </div>
 
         {/* Center Column - Charts */}
-        <div className="lg:col-span-1 space-y-6 lg:space-y-0 lg:grid lg:grid-cols-2 lg:gap-6">
+        <div className="lg:col-span-1 space-y-6 lg:space-y-0 lg:grid lg:grid-cols-3 lg:gap-6">
           <MentionVolumeChart />
           <PlatformDistribution />
         </div>
