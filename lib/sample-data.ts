@@ -1,4 +1,4 @@
-import { Brand, Mention, Product, Competitor, Report, KPICard, ChartData, GeoData, PlatformData, Platform } from './types';
+import { Brand, Mention, Product, Report, KPICard, ChartData, GeoData, PlatformData, Platform } from './types';
 import { addDays, subDays, format, addHours } from 'date-fns';
 
 // Generate sample brands
@@ -21,7 +21,6 @@ export const sampleBrands: Brand[] = [
       reddit: 'r/techcorp',
       news: ''
     },
-    competitors: ['InnovateX', 'FutureTech', 'NextGen Solutions'],
     targetCountries: ['United States', 'Canada', 'United Kingdom', 'Germany', 'Australia'],
     languages: ['English', 'Spanish', 'French', 'German'],
     status: 'active',
@@ -48,7 +47,6 @@ export const sampleBrands: Brand[] = [
       reddit: 'r/ecofashion',
       news: ''
     },
-    competitors: ['GreenWear', 'SustainableStyle', 'EarthFashion'],
     targetCountries: ['United States', 'United Kingdom', 'Canada', 'Australia', 'Netherlands'],
     languages: ['English', 'Dutch', 'Spanish'],
     status: 'active',
@@ -75,7 +73,6 @@ export const sampleBrands: Brand[] = [
       reddit: 'r/pizza',
       news: ''
     },
-    competitors: ['GourmetPizza Co', 'Artisan Slice', 'Premium Pies'],
     targetCountries: ['United States', 'Canada', 'United Kingdom'],
     languages: ['English', 'French'],
     status: 'active',
@@ -265,7 +262,7 @@ export const sampleKPIs: KPICard[] = [
   {
     title: 'Share of Voice',
     value: '34%',
-    change: '+2% vs competitors',
+    change: '+2% vs last week',
     trend: 'up',
     sparklineData: [28, 30, 32, 31, 33, 33, 34],
     color: 'purple'
@@ -305,58 +302,6 @@ export const geoData: GeoData[] = [
   { country: 'Netherlands', mentions: 87, sentiment: 0.76, coordinates: [5.2913, 52.1326] }
 ];
 
-// Competitor data
-export const sampleCompetitors: Competitor[] = [
-  {
-    id: '1',
-    name: 'InnovateX',
-    industry: 'Technology',
-    website: 'https://innovatex.com',
-    socialHandles: {
-      twitter: '@innovatex',
-      instagram: '@innovatex_tech',
-      facebook: 'InnovateXTech',
-      linkedin: 'innovatex',
-      tiktok: '@innovatex',
-      youtube: 'InnovateXChannel',
-      reddit: 'r/innovatex',
-      news: ''
-    },
-    keywords: ['InnovateX', '@innovatex', '#innovatex'],
-    products: ['InnovateX Pro', 'InnovateX Lite'],
-    metrics: {
-      mentions: 1876,
-      sentiment: 0.68,
-      shareOfVoice: 23
-    }
-  },
-  {
-    id: '2',
-    name: 'FutureTech',
-    industry: 'Technology',
-    website: 'https://futuretech.com',
-    socialHandles: {
-      twitter: '@futuretech',
-      instagram: '@futuretech_official',
-      facebook: 'FutureTechOfficial',
-      linkedin: 'futuretech',
-      tiktok: '@futuretech',
-      youtube: 'FutureTechChannel',
-      reddit: 'r/futuretech',
-      news: ''
-    },
-    keywords: ['FutureTech', '@futuretech', '#futuretech'],
-    products: ['FutureTech X', 'FutureTech Mini'],
-    metrics: {
-      mentions: 1543,
-      sentiment: 0.71,
-      shareOfVoice: 19
-    }
-  }
-];
-
-
-
 // Chart data for Product Intelligence
 export const productIntelligenceData = {
   mentionVolume: generateTimeSeriesData(30),
@@ -364,12 +309,6 @@ export const productIntelligenceData = {
     ...d,
     sentimentScore: 0.6 + Math.random() * 0.3
   })),
-  competitorComparison: [
-    { name: 'TechCorp Pro X1', mentions: 1547, sentiment: 0.76, shareOfVoice: 34 },
-    { name: 'InnovateX Pro', mentions: 1234, sentiment: 0.68, shareOfVoice: 27 },
-    { name: 'FutureTech X', mentions: 987, sentiment: 0.71, shareOfVoice: 22 },
-    { name: 'NextGen Elite', mentions: 756, sentiment: 0.64, shareOfVoice: 17 }
-  ],
   featureAnalysis: [
     { feature: '5G Connectivity', mentions: 234, sentiment: 0.82, trend: 'up' },
     { feature: 'AI Camera', mentions: 189, sentiment: 0.78, trend: 'up' },

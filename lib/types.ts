@@ -39,7 +39,6 @@ export interface Brand {
   keywords: string[];
   hashtags: string[];
   socialHandles: Record<Platform, string>;
-  competitors: string[];
   targetCountries: string[];
   languages: string[];
   status: 'active' | 'paused' | 'setup_required';
@@ -67,23 +66,6 @@ export interface Product {
     engagementRate: number;
   };
 }
-
-export interface Competitor {
-  id: string;
-  name: string;
-  industry: string;
-  website: string;
-  socialHandles: Record<Platform, string>;
-  keywords: string[];
-  products: string[];
-  metrics: {
-    mentions: number;
-    sentiment: number;
-    shareOfVoice: number;
-  };
-}
-
-
 
 export interface Report {
   id: string;

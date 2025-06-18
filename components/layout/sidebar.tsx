@@ -23,7 +23,6 @@ const navigationItems = [
   { id: 'dashboard', label: 'Dashboard', icon: Home, badge: null },
   { id: 'monitoring', label: 'Brand Monitoring', icon: Eye, badge: '2.8k' },
   { id: 'products', label: 'Product Intelligence', icon: BarChart3, badge: null, highlight: true },
-  { id: 'competitors', label: 'Competitors', icon: Users, badge: null },
   { id: 'reports', label: 'Reports', icon: FileText, badge: '3' },
   { id: 'settings', label: 'Settings', icon: Settings, badge: null }
 ];
