@@ -6,7 +6,6 @@ import { KPICards } from '@/components/dashboard/kpi-cards';
 import { MentionsFeed } from '@/components/dashboard/mentions-feed';
 import { MentionVolumeChart } from '@/components/dashboard/charts/mention-volume-chart';
 import { PlatformDistribution } from '@/components/dashboard/charts/platform-distribution';
-import { CompetitorComparison } from '@/components/dashboard/competitor-comparison';
 
 export function Dashboard() {
   return (
@@ -41,10 +40,6 @@ export function Dashboard() {
           <PlatformDistribution />
         </div>
 
-        {/* Right Column - Analysis */}
-        <div className="lg:col-span-1">
-          <CompetitorComparison />
-        </div>
       </div>
     </div>
   );
