@@ -39,7 +39,6 @@ export interface Brand {
   keywords: string[];
   hashtags: string[];
   socialHandles: Record<Platform, string>;
-  competitors: string[];
   targetCountries: string[];
   languages: string[];
   status: 'active' | 'paused' | 'setup_required';
@@ -68,27 +67,11 @@ export interface Product {
   };
 }
 
-export interface Competitor {
-  id: string;
-  name: string;
-  industry: string;
-  website: string;
-  socialHandles: Record<Platform, string>;
-  keywords: string[];
-  products: string[];
-  metrics: {
-    mentions: number;
-    sentiment: number;
-    shareOfVoice: number;
-  };
-}
-
-
 
 export interface Report {
   id: string;
   name: string;
-  type: 'executive_summary' | 'brand_health' | 'campaign_performance' | 'competitive_intelligence' | 'crisis_management' | 'customer_insights' | 'product_launch';
+  type: 'executive_summary' | 'brand_health' | 'campaign_performance' | 'crisis_management' | 'customer_insights' | 'product_launch';
   brandId: string;
   dateRange: {
     start: string;

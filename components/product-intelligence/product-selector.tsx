@@ -11,11 +11,10 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 import { useAppStore } from '@/lib/store';
-import { sampleProducts } from '@/lib/sample-data';
 
 export function ProductSelector() {
-  const { selectedProduct, setSelectedProduct } = useAppStore();
-  const currentProduct = sampleProducts.find(p => p.id === selectedProduct);
+  const { selectedProduct, setSelectedProduct, products } = useAppStore();
+  const currentProduct = products.find(p => p.id === selectedProduct);
 
   return (
     <div className="flex items-center justify-between mb-8">
@@ -31,7 +30,7 @@ export function ProductSelector() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
-            {sampleProducts.map((product) => (
+            {products.map((product) => (
               <DropdownMenuItem
                 key={product.id}
                 onClick={() => setSelectedProduct(product.id)}

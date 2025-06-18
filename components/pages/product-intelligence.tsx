@@ -7,7 +7,6 @@ import { MentionVolumeTimeline } from '@/components/product-intelligence/mention
 import { SentimentAnalysis } from '@/components/product-intelligence/sentiment-analysis';
 import { PlatformPerformance } from '@/components/product-intelligence/platform-performance';
 import { GeographicDistribution } from '@/components/product-intelligence/geographic-distribution';
-import { CompetitiveAnalysis } from '@/components/product-intelligence/competitive-analysis';
 import { CustomerJourney } from '@/components/product-intelligence/customer-journey';
 
 export function ProductIntelligence() {
@@ -39,7 +38,6 @@ export function ProductIntelligence() {
         {/* Row 2: Detailed Analytics */}
         <PlatformPerformance />
         <GeographicDistribution />
-        <CompetitiveAnalysis />
         <CustomerJourney />
       </div>
     </div>
