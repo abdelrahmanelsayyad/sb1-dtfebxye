@@ -11,7 +11,8 @@ import {
   Settings, 
   ChevronLeft,
   ChevronRight,
-  TrendingUp
+  TrendingUp,
+  Plus
 } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
@@ -71,6 +72,26 @@ export function Sidebar() {
         </div>
       </div>
 
+      {/* Quick Setup Button */}
+      <div className="p-2">
+        <motion.div
+          className="px-2"
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+        >
+          <Button
+            variant="default"
+            className="w-full justify-start h-12 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0"
+            onClick={() => setCurrentPage('setup')}
+          >
+            <Plus className="w-5 h-5 mr-3" />
+            {!sidebarCollapsed && <span>New Campaign</span>}
+          </Button>
+        </motion.div>
+      </div>
+
+      <Separator />
+
       {/* Navigation */}
       <div className="flex-1 py-4 space-y-1">
         {navigationItems.map((item) => (
@@ -111,8 +132,6 @@ export function Sidebar() {
       </div>
 
       <Separator />
-
-
     </motion.div>
   );
 }

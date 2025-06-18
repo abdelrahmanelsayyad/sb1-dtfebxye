@@ -12,6 +12,7 @@ const breadcrumbMap: Record<string, string> = {
   monitoring: 'Brand Monitoring',
   products: 'Product Intelligence',
   competitors: 'Competitors',
+  setup: 'Campaign Setup',
   reports: 'Reports',
 };
 
@@ -29,16 +30,18 @@ export function Header() {
         </div>
 
         {/* Center - Search */}
-        <div className="flex-1 max-w-md mx-8">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <Input
-              type="text"
-              placeholder="Search mentions, brands, or keywords..."
-              className="pl-10 bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700"
-            />
+        {currentPage !== 'setup' && (
+          <div className="flex-1 max-w-md mx-8">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Input
+                type="text"
+                placeholder="Search mentions, brands, or keywords..."
+                className="pl-10 bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+              />
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Right side - Actions */}
         <div className="flex items-center space-x-4">
