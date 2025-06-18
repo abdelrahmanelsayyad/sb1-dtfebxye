@@ -8,18 +8,14 @@ import {
   BarChart3, 
   Users, 
   FileText, 
-  Bell, 
   Settings, 
-  Users2,
   ChevronLeft,
   ChevronRight,
-  Zap,
   TrendingUp
 } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 
 const navigationItems = [
@@ -28,14 +24,11 @@ const navigationItems = [
   { id: 'products', label: 'Product Intelligence', icon: BarChart3, badge: null, highlight: true },
   { id: 'competitors', label: 'Competitors', icon: Users, badge: null },
   { id: 'reports', label: 'Reports', icon: FileText, badge: '3' },
-  { id: 'alerts', label: 'Alerts', icon: Bell, badge: '2' },
-  { id: 'integrations', label: 'Integrations', icon: Zap, badge: null },
-  { id: 'team', label: 'Team', icon: Users2, badge: null },
-  { id: 'settings', label: 'Settings', icon: Settings, badge: null },
+  { id: 'settings', label: 'Settings', icon: Settings, badge: null }
 ];
 
 export function Sidebar() {
-  const { sidebarCollapsed, setSidebarCollapsed, currentPage, setCurrentPage, user } = useAppStore();
+  const { sidebarCollapsed, setSidebarCollapsed, currentPage, setCurrentPage } = useAppStore();
 
   return (
     <motion.div
@@ -59,7 +52,7 @@ export function Sidebar() {
               </div>
               <div>
                 <h1 className="font-bold text-lg text-gray-900 dark:text-white">SocialListen</h1>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Pro Dashboard</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Dashboard</p>
               </div>
             </motion.div>
           )}
@@ -119,42 +112,7 @@ export function Sidebar() {
 
       <Separator />
 
-      {/* User Profile */}
-      <div className="p-4">
-        <div className="flex items-center space-x-3">
-          <Avatar className="w-10 h-10">
-            <AvatarFallback>{user?.avatar || '👤'}</AvatarFallback>
-          </Avatar>
-          {!sidebarCollapsed && (
-            <motion.div
-              className="flex-1 min-w-0"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.1 }}
-            >
-              <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                {user?.name}
-              </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                {user?.role} • {user?.company}
-              </p>
-            </motion.div>
-          )}
-        </div>
-        
-        {!sidebarCollapsed && (
-          <motion.div
-            className="mt-3"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-          >
-            <Button variant="outline" size="sm" className="w-full">
-              Upgrade Plan
-            </Button>
-          </motion.div>
-        )}
-      </div>
+
     </motion.div>
   );
 }

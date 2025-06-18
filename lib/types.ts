@@ -83,26 +83,7 @@ export interface Competitor {
   };
 }
 
-export interface Alert {
-  id: string;
-  name: string;
-  type: 'volume_spike' | 'sentiment_drop' | 'crisis_keywords' | 'competitor_activity' | 'viral_content' | 'influencer_mention';
-  status: 'active' | 'triggered' | 'resolved';
-  brandId: string;
-  conditions: {
-    threshold: number;
-    timeframe: string;
-    platforms: Platform[];
-    keywords?: string[];
-  };
-  notifications: {
-    email: string[];
-    slack?: string;
-    sms?: string[];
-  };
-  triggeredAt?: string;
-  resolvedAt?: string;
-}
+
 
 export interface Report {
   id: string;
@@ -120,17 +101,7 @@ export interface Report {
   createdAt: string;
 }
 
-export interface TeamMember {
-  id: string;
-  name: string;
-  email: string;
-  role: 'admin' | 'analyst' | 'viewer' | 'client';
-  avatar: string;
-  brandAccess: string[];
-  permissions: string[];
-  lastLogin: string;
-  status: 'active' | 'invited' | 'inactive';
-}
+
 
 export interface KPICard {
   title: string;

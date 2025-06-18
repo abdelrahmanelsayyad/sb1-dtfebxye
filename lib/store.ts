@@ -1,11 +1,9 @@
 import { create } from 'zustand';
-import { Brand, Mention, Product, Alert, TeamMember } from './types';
-import { sampleBrands, sampleMentions, sampleProducts, sampleAlerts, sampleTeamMembers } from './sample-data';
+import { Brand, Mention, Product } from './types';
+import { sampleBrands, sampleMentions, sampleProducts } from './sample-data';
 
 interface AppState {
-  // Auth
-  isAuthenticated: boolean;
-  user: any;
+
   
   // UI State
   sidebarCollapsed: boolean;
@@ -18,8 +16,7 @@ interface AppState {
   brands: Brand[];
   mentions: Mention[];
   products: Product[];
-  alerts: Alert[];
-  teamMembers: TeamMember[];
+
   
   // Filters
   dateRange: { start: Date; end: Date };
@@ -27,8 +24,7 @@ interface AppState {
   sentimentFilter: 'all' | 'positive' | 'neutral' | 'negative';
   
   // Actions
-  setAuthenticated: (value: boolean) => void;
-  setUser: (user: any) => void;
+
   setSidebarCollapsed: (collapsed: boolean) => void;
   setDarkMode: (darkMode: boolean) => void;
   setCurrentPage: (page: string) => void;
@@ -47,16 +43,7 @@ interface AppState {
 }
 
 export const useAppStore = create<AppState>((set, get) => ({
-  // Initial state
-  isAuthenticated: true, // Set to true for demo
-  user: {
-    id: '1',
-    name: 'Alex Thompson',
-    email: 'alex@agency.com',
-    role: 'admin',
-    company: 'Social Insights Agency',
-    avatar: '👨‍💼'
-  },
+
   
   sidebarCollapsed: false,
   darkMode: false,
@@ -67,8 +54,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   brands: sampleBrands,
   mentions: sampleMentions,
   products: sampleProducts,
-  alerts: sampleAlerts,
-  teamMembers: sampleTeamMembers,
+
   
   dateRange: {
     start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
@@ -78,8 +64,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   sentimentFilter: 'all',
   
   // Actions
-  setAuthenticated: (value) => set({ isAuthenticated: value }),
-  setUser: (user) => set({ user }),
+
   setSidebarCollapsed: (collapsed) => set({ sidebarCollapsed: collapsed }),
   setDarkMode: (darkMode) => set({ darkMode }),
   setCurrentPage: (page) => set({ currentPage: page }),

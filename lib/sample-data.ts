@@ -1,4 +1,4 @@
-import { Brand, Mention, Product, Competitor, Alert, Report, TeamMember, KPICard, ChartData, GeoData, PlatformData, Platform } from './types';
+import { Brand, Mention, Product, Competitor, Report, KPICard, ChartData, GeoData, PlatformData, Platform } from './types';
 import { addDays, subDays, format, addHours } from 'date-fns';
 
 // Generate sample brands
@@ -355,80 +355,7 @@ export const sampleCompetitors: Competitor[] = [
   }
 ];
 
-// Team members
-export const sampleTeamMembers: TeamMember[] = [
-  {
-    id: '1',
-    name: 'Alex Thompson',
-    email: 'alex@agency.com',
-    role: 'admin',
-    avatar: '👨‍💼',
-    brandAccess: ['1', '2', '3'],
-    permissions: ['all'],
-    lastLogin: new Date().toISOString(),
-    status: 'active'
-  },
-  {
-    id: '2',
-    name: 'Sarah Martinez',
-    email: 'sarah@agency.com',
-    role: 'analyst',
-    avatar: '👩‍💻',
-    brandAccess: ['1', '2'],
-    permissions: ['view_analytics', 'create_reports'],
-    lastLogin: subDays(new Date(), 1).toISOString(),
-    status: 'active'
-  },
-  {
-    id: '3',
-    name: 'John Client',
-    email: 'john@client.com',
-    role: 'client',
-    avatar: '👨‍💻',
-    brandAccess: ['1'],
-    permissions: ['view_reports'],
-    lastLogin: subDays(new Date(), 3).toISOString(),
-    status: 'active'
-  }
-];
 
-// Alerts
-export const sampleAlerts: Alert[] = [
-  {
-    id: '1',
-    name: 'TechCorp Mention Spike',
-    type: 'volume_spike',
-    status: 'active',
-    brandId: '1',
-    conditions: {
-      threshold: 100,
-      timeframe: '1 hour',
-      platforms: ['twitter', 'instagram'],
-      keywords: ['TechCorp']
-    },
-    notifications: {
-      email: ['alex@agency.com', 'sarah@agency.com'],
-      slack: '#alerts'
-    }
-  },
-  {
-    id: '2',
-    name: 'Sentiment Drop Alert',
-    type: 'sentiment_drop',
-    status: 'triggered',
-    brandId: '1',
-    conditions: {
-      threshold: 0.6,
-      timeframe: '4 hours',
-      platforms: ['twitter', 'reddit'],
-    },
-    notifications: {
-      email: ['alex@agency.com'],
-      sms: ['+1234567890']
-    },
-    triggeredAt: subDays(new Date(), 1).toISOString()
-  }
-];
 
 // Chart data for Product Intelligence
 export const productIntelligenceData = {

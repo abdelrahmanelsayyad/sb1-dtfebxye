@@ -14,9 +14,6 @@ const pageComponents = {
   products: ProductIntelligence,
   competitors: Competitors,
   reports: () => <div className="p-6"><h1 className="text-2xl font-bold">Reports - Coming Soon</h1></div>,
-  alerts: () => <div className="p-6"><h1 className="text-2xl font-bold">Alerts - Coming Soon</h1></div>,
-  integrations: () => <div className="p-6"><h1 className="text-2xl font-bold">Integrations - Coming Soon</h1></div>,
-  team: () => <div className="p-6"><h1 className="text-2xl font-bold">Team Management - Coming Soon</h1></div>,
   settings: () => <div className="p-6"><h1 className="text-2xl font-bold">Settings - Coming Soon</h1></div>,
 };
 
