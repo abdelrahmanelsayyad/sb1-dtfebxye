@@ -112,11 +112,6 @@ export function Sidebar() {
               {!sidebarCollapsed && (
                 <>
                   <span className="flex-1 text-left">{item.label}</span>
-                  {item.badge && (
-                    <Badge variant="secondary" className="ml-2">
-                      {item.badge}
-                    </Badge>
-                  )}
                   {item.highlight && (
                     <Badge className="ml-2 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
                       New
