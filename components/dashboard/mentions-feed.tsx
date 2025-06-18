@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { sampleMentions } from '@/lib/sample-data';
+import { useAppStore } from '@/lib/store';
 import { formatDistanceToNow } from 'date-fns';
 
 const platformIcons = {
@@ -34,6 +34,7 @@ const platformColors = {
 };
 
 export function MentionsFeed() {
+  const { mentions } = useAppStore();
   return (
     <Card className="h-[600px]">
       <CardHeader>
@@ -47,7 +48,7 @@ export function MentionsFeed() {
       <CardContent>
         <ScrollArea className="h-[500px] pr-4">
           <div className="space-y-4">
-            {sampleMentions.map((mention, index) => {
+            {mentions.map((mention, index) => {
               const PlatformIcon = platformIcons[mention.platform];
               const platformColor = platformColors[mention.platform];
               
