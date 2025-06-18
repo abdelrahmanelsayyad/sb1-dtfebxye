@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAppStore } from '@/lib/store';
-import { formatDistanceToNow } from 'date-fns';
+import { TimeAgo } from '@/components/ui/time-ago';
 
 const platformIcons = {
   twitter: Twitter,
@@ -121,9 +121,7 @@ export function MentionsFeed() {
                         </div>
                         
                         <div className="flex items-center space-x-2">
-                          <span className="text-xs text-gray-500">
-                            {formatDistanceToNow(new Date(mention.timestamp), { addSuffix: true })}
-                          </span>
+                          <TimeAgo date={mention.timestamp} className="text-xs text-gray-500" />
                           <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                             <ExternalLink className="w-3 h-3" />
                           </Button>
