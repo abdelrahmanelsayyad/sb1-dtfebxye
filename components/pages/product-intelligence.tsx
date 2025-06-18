@@ -38,7 +38,6 @@ export function ProductIntelligence() {
         {/* Row 2: Detailed Analytics */}
         <PlatformPerformance />
         <GeographicDistribution />
-        <CustomerJourney />
       </div>
     </div>
   );
