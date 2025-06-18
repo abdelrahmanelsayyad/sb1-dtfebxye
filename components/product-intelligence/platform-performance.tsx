@@ -81,27 +81,6 @@ export function PlatformPerformance() {
             </BarChart>
           </ResponsiveContainer>
           
-          {/* Platform Insights */}
-          <div className="mt-4 space-y-2">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-gray-600 dark:text-gray-400">Top Performing Platform:</span>
-              <Badge className="bg-blue-100 text-blue-800">
-                Twitter - {topMentions.toLocaleString()} mentions
-              </Badge>
-            </div>
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-gray-600 dark:text-gray-400">Highest Engagement:</span>
-              <Badge className="bg-purple-100 text-purple-800">
-                TikTok - {highestEngagement}% avg.
-              </Badge>
-            </div>
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-gray-600 dark:text-gray-400">Best Sentiment:</span>
-              <Badge className="bg-green-100 text-green-800">
-                Instagram - {bestSentiment.toFixed(0)}%
-              </Badge>
-            </div>
-          </div>
         </CardContent>
       </Card>
     </motion.div>

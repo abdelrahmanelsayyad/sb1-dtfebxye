@@ -3,7 +3,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Brush, ReferenceLine } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Brush } from 'recharts';
 import { TrendingUp, MessageSquare, Zap } from 'lucide-react';
 import { productIntelligenceData } from '@/lib/sample-data';
 import { motion } from 'framer-motion';
@@ -38,16 +38,6 @@ export function MentionVolumeTimeline() {
                 Negative
               </Button>
             </div>
-          </div>
-          <div className="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-400">
-            <div className="flex items-center space-x-1">
-              <Zap className="w-4 h-4" />
-              <span>Peak: March 15 (Product Launch)</span>
-            </div>
-            <span>•</span>
-            <span>Avg. Daily: 52 mentions</span>
-            <span>•</span>
-            <span>Growth: +45% vs last period</span>
           </div>
         </CardHeader>
         <CardContent>
@@ -113,7 +103,6 @@ export function MentionVolumeTimeline() {
                 fill="url(#negative)"
                 strokeWidth={2}
               />
-              <ReferenceLine x="03/15" stroke="#2563eb" strokeDasharray="5 5" />
               <Brush dataKey="date" height={30} stroke="#2563eb" />
             </AreaChart>
           </ResponsiveContainer>

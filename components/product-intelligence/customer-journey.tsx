@@ -95,48 +95,6 @@ export function CustomerJourney() {
             </div>
           </div>
 
-          {/* Stage Insights */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <h4 className="text-sm font-medium">Top Converting Stages</h4>
-              <div className="space-y-1">
-                <div className="flex items-center justify-between text-sm">
-                  <span>Awareness → Consideration</span>
-                  <Badge variant="secondary">60%</Badge>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span>Experience → Advocacy</span>
-                  <Badge variant="secondary">49%</Badge>
-                </div>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <h4 className="text-sm font-medium">Biggest Drop-offs</h4>
-              <div className="space-y-1">
-                <div className="flex items-center justify-between text-sm">
-                  <span>Consideration → Purchase</span>
-                  <Badge variant="destructive">40%</Badge>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span>Purchase → Experience</span>
-                  <Badge variant="destructive">19%</Badge>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Journey Insights */}
-          <div className="bg-indigo-50 dark:bg-indigo-950/20 p-3 rounded-lg border border-indigo-200 dark:border-indigo-800">
-            <h4 className="text-sm font-medium text-indigo-800 dark:text-indigo-200 mb-2">
-              Journey Insights
-            </h4>
-            <ul className="text-xs text-indigo-700 dark:text-indigo-300 space-y-1">
-              <li>• Strong awareness-to-consideration conversion (60%)</li>
-              <li>• Purchase intent needs improvement (36% conversion)</li>
-              <li>• High advocacy rate among customers (14% share experiences)</li>
-              <li>• Focus on reducing consideration-to-purchase friction</li>
-            </ul>
-          </div>
         </CardContent>
       </Card>
     </motion.div>
