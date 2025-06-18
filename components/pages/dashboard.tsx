@@ -1,5 +1,4 @@
 'use client';
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import { KPICards } from '@/components/dashboard/kpi-cards';
@@ -28,20 +27,21 @@ export function Dashboard() {
       <KPICards />
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Column - Mentions Feed */}
-        <div className="lg:col-span-1">
+        <div className="lg:col-span-4">
           <MentionsFeed />
         </div>
-
-        {/* Center Column - Charts */}
-        <div className="lg:col-span-1 space-y-6 lg:space-y-0 lg:grid lg:grid-cols-3 lg:gap-6">
+        
+        {/* Center Column - Mention Volume Chart */}
+        <div className="lg:col-span-5">
           <MentionVolumeChart />
+        </div>
+        
+        {/* Right Column - Platform Distribution */}
+        <div className="lg:col-span-3">
           <PlatformDistribution />
         </div>
-
-        {/* Right Column - Analysis */}
-        <div className="lg:col-span-1" />
       </div>
     </div>
   );
