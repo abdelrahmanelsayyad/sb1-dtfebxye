@@ -34,7 +34,8 @@ export function PlatformPerformance() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.2 }}
     >
-      <Card className="h-[500px]">
+      {/* Allow the card to grow so the footer content isn't cut off */}
+      <Card className="min-h-[500px]">
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <Smartphone className="w-5 h-5 text-purple-600" />
