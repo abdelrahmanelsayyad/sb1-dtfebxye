@@ -61,9 +61,9 @@ const platforms = [
 ];
 
 const countries = [
-  'United States', 'United Kingdom', 'Canada', 'Australia', 'Germany', 
-  'France', 'Spain', 'Italy', 'Netherlands', 'Brazil', 'Mexico', 'Japan', 
-  'South Korea', 'India', 'Singapore', 'UAE', 'South Africa'
+  'United States', 'United Kingdom', 'Canada', 'Australia', 'Germany',
+  'France', 'Spain', 'Italy', 'Netherlands', 'Brazil', 'Mexico', 'Japan',
+  'South Korea', 'India', 'Singapore', 'UAE', 'South Africa', 'Saudi Arabia'
 ];
 
 const languages = [
@@ -505,7 +505,7 @@ export function CampaignSetup() {
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <AtSign className="w-5 h-5" />
-                  <span>Your Social Handles (Optional)</span>
+                    <span>Your Social Handles</span>
                 </CardTitle>
               </CardHeader>
               <CardContent>

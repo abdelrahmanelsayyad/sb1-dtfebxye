@@ -20,7 +20,7 @@ export function Dashboard() {
           Social Listening Dashboard
         </h1>
         <p className="text-gray-600 dark:text-gray-400">
-          Real-time insights across all your monitored brands and products
+          insights across all your monitored brands and products
         </p>
       </motion.div>
 
