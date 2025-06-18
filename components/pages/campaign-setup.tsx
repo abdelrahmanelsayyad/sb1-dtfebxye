@@ -20,7 +20,8 @@ import {
   Languages,
   Smartphone,
   Building,
-  Sparkles
+  Sparkles,
+  FileText
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -789,18 +790,13 @@ export function CampaignSetup() {
                   </p>
                   <div className="flex items-center justify-center space-x-4 text-sm text-gray-600 dark:text-gray-400">
                     <div className="flex items-center space-x-1">
-                      <Eye className="w-4 h-4" />
-                      <span>Real-time monitoring</span>
-                    </div>
-                    <span>•</span>
-                    <div className="flex items-center space-x-1">
-                      <Zap className="w-4 h-4" />
-                      <span>Instant alerts</span>
-                    </div>
-                    <span>•</span>
-                    <div className="flex items-center space-x-1">
                       <Target className="w-4 h-4" />
                       <span>Smart analytics</span>
+                    </div>
+                    <span>•</span>
+                    <div className="flex items-center space-x-1">
+                      <FileText className="w-4 h-4" />
+                      <span>Full report generation</span>
                     </div>
                   </div>
                 </CardContent>
