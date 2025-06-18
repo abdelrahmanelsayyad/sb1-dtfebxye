@@ -814,7 +814,7 @@ export function CampaignSetup() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-8 max-w-6xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -829,7 +829,7 @@ export function CampaignSetup() {
           </motion.div>
 
           {/* Progress Bar */}
-          <div className="max-w-4xl mx-auto mb-8">
+          <div className="max-w-6xl mx-auto mb-8">
             <div className="flex items-center justify-between mb-4">
               <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
                 Step {currentStep} of {steps.length}
