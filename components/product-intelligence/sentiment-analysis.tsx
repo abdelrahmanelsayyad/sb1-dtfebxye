@@ -7,30 +7,14 @@ import { PieChart, Pie, Cell, ResponsiveContainer, LineChart, Line, XAxis, YAxis
 import { Heart, Frown, Meh, TrendingUp } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-const sentimentData = [
-  { name: 'Positive', value: 62, color: '#10b981' },
-  { name: 'Neutral', value: 25, color: '#6b7280' },
-  { name: 'Negative', value: 13, color: '#ef4444' }
-];
+const sentimentData: { name: string; value: number; color: string }[] = [];
 
-const sentimentTrend = [
-  { date: '1', score: 72 },
-  { date: '7', score: 68 },
-  { date: '14', score: 71 },
-  { date: '21', score: 76 },
-  { date: '28', score: 78 }
-];
+const sentimentTrend: { date: string; score: number }[] = [];
 
-const topSentimentDrivers = [
-  { type: 'positive', keyword: 'amazing camera', count: 89 },
-  { type: 'positive', keyword: 'great design', count: 67 },
-  { type: 'positive', keyword: 'fast performance', count: 54 },
-  { type: 'negative', keyword: 'battery drain', count: 43 },
-  { type: 'negative', keyword: 'overheating', count: 28 }
-];
+const topSentimentDrivers: { type: 'positive' | 'negative'; keyword: string; count: number }[] = [];
 
 export function SentimentAnalysis() {
-  const overallScore = 78;
+  const overallScore = 0;
 
   return (
     <motion.div
@@ -52,10 +36,6 @@ export function SentimentAnalysis() {
               <span className="text-2xl font-bold text-white">{overallScore}</span>
             </div>
             <p className="text-sm text-gray-600 dark:text-gray-400">Overall Sentiment Score</p>
-            <div className="flex items-center justify-center space-x-1 mt-1">
-              <TrendingUp className="w-4 h-4 text-green-600" />
-              <span className="text-sm text-green-600">+5% vs last period</span>
-            </div>
           </div>
 
           {/* Sentiment Breakdown */}

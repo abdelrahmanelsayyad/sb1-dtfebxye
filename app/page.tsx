@@ -13,7 +13,7 @@ const pageComponents = {
   monitoring: BrandMonitoring,
   products: ProductIntelligence,
   setup: CampaignSetup,
-  reports: () => <div className="p-6"><h1 className="text-2xl font-bold">Reports - Coming Soon</h1></div>,
+  reports: () => <div className="p-6"><h1 className="text-2xl font-bold">Reports</h1></div>,
   settings: () => <div className="p-6"><h1 className="text-2xl font-bold">Settings - Coming Soon</h1></div>,
 };
 
