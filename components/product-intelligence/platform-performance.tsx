@@ -13,8 +13,19 @@ const platformPerformanceData = platformData.map(platform => ({
   mentions: platform.mentions,
   engagement: platform.engagement,
   sentiment: platform.sentiment * 100,
-  color: platform.color
+  color: platform.color,
 }));
+
+// Safeguards for empty datasets to prevent runtime errors
+const topMentions = platformPerformanceData[0]?.mentions ?? 0;
+const highestEngagement =
+  platformPerformanceData.length > 0
+    ? Math.max(...platformPerformanceData.map((p) => p.engagement))
+    : 0;
+const bestSentiment =
+  platformPerformanceData.length > 0
+    ? Math.max(...platformPerformanceData.map((p) => p.sentiment))
+    : 0;
 
 export function PlatformPerformance() {
   return (
@@ -74,19 +85,19 @@ export function PlatformPerformance() {
             <div className="flex items-center justify-between text-sm">
               <span className="text-gray-600 dark:text-gray-400">Top Performing Platform:</span>
               <Badge className="bg-blue-100 text-blue-800">
-                Twitter - {platformPerformanceData[0].mentions.toLocaleString()} mentions
+                Twitter - {topMentions.toLocaleString()} mentions
               </Badge>
             </div>
             <div className="flex items-center justify-between text-sm">
               <span className="text-gray-600 dark:text-gray-400">Highest Engagement:</span>
               <Badge className="bg-purple-100 text-purple-800">
-                TikTok - {Math.max(...platformPerformanceData.map(p => p.engagement))}% avg.
+                TikTok - {highestEngagement}% avg.
               </Badge>
             </div>
             <div className="flex items-center justify-between text-sm">
               <span className="text-gray-600 dark:text-gray-400">Best Sentiment:</span>
               <Badge className="bg-green-100 text-green-800">
-                Instagram - {Math.max(...platformPerformanceData.map(p => p.sentiment)).toFixed(0)}%
+                Instagram - {bestSentiment.toFixed(0)}%
               </Badge>
             </div>
           </div>
