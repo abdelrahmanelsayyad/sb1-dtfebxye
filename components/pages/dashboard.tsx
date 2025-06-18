@@ -34,10 +34,14 @@ export function Dashboard() {
           <MentionsFeed />
         </div>
 
-        {/* Center Column - Charts */}
-        <div className="lg:col-span-1 space-y-6">
-          <MentionVolumeChart />
-          <PlatformDistribution />
+        {/* Right Columns - Charts */}
+        <div className="lg:col-span-2 grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2">
+            <MentionVolumeChart />
+          </div>
+          <div className="lg:col-span-1">
+            <PlatformDistribution />
+          </div>
         </div>
 
       </div>
