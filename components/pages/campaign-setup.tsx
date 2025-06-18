@@ -786,7 +786,7 @@ export function CampaignSetup() {
                     Ready to Launch!
                   </h3>
                   <p className="text-gray-600 dark:text-gray-400 mb-4">
-                    Your social listening campaign is configured and ready to start monitoring mentions across all selected platforms.
+                    Your social listening campaign is configured and ready to start analysing mentions across all selected platforms.
                   </p>
                   <div className="flex items-center justify-center space-x-4 text-sm text-gray-600 dark:text-gray-400">
                     <div className="flex items-center space-x-1">
