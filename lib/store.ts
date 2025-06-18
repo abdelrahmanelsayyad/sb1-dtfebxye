@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { Brand, Mention, Product } from './types';
+import { sampleBrands, sampleMentions } from './sample-data';
 
 interface AppState {
 
@@ -47,11 +48,11 @@ export const useAppStore = create<AppState>((set, get) => ({
   sidebarCollapsed: false,
   darkMode: false,
   currentPage: 'dashboard',
-  selectedBrand: null,
+  selectedBrand: 'brand1',
   selectedProduct: null,
 
-  brands: [],
-  mentions: [],
+  brands: sampleBrands,
+  mentions: sampleMentions,
   products: [],
 
   

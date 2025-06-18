@@ -4,11 +4,14 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import { platformData } from '@/lib/sample-data';
+import { useAppStore } from '@/lib/store';
 import { motion } from 'framer-motion';
 
 const COLORS = ['#1DA1F2', '#E4405F', '#1877F2', '#000000', '#0A66C2', '#FF0000', '#FF4500'];
 
 export function PlatformDistribution() {
+  const { selectedBrand } = useAppStore();
+  const data = platformData[selectedBrand || 'brand1'] || [];
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -23,7 +26,7 @@ export function PlatformDistribution() {
           <ResponsiveContainer width="100%" height={280}>
             <PieChart>
               <Pie
-                data={platformData}
+                data={data}
                 cx="50%"
                 cy="50%"
                 innerRadius={60}
@@ -31,7 +34,7 @@ export function PlatformDistribution() {
                 paddingAngle={5}
                 dataKey="mentions"
               >
-                {platformData.map((entry, index) => (
+                {data.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>

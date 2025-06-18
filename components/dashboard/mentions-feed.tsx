@@ -34,7 +34,12 @@ const platformColors = {
 };
 
 export function MentionsFeed() {
-  const { mentions } = useAppStore();
+  const { mentions, selectedBrand } = useAppStore();
+  const filtered = React.useMemo(
+    () =>
+      mentions.filter((m) => !selectedBrand || m.brandId === selectedBrand),
+    [mentions, selectedBrand]
+  );
   return (
     <Card className="h-[600px]">
       <CardHeader>
@@ -48,7 +53,7 @@ export function MentionsFeed() {
       <CardContent>
         <ScrollArea className="h-[500px] pr-4">
           <div className="space-y-4">
-            {mentions.map((mention, index) => {
+            {filtered.map((mention, index) => {
               const PlatformIcon = platformIcons[mention.platform];
               const platformColor = platformColors[mention.platform];
               

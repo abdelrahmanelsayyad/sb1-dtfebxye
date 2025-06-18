@@ -3,14 +3,28 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Brush } from 'recharts';
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Brush,
+} from 'recharts';
 import { Download, TrendingUp } from 'lucide-react';
 import { generateTimeSeriesData } from '@/lib/sample-data';
+import { useAppStore } from '@/lib/store';
 import { motion } from 'framer-motion';
 
-const data = generateTimeSeriesData(30);
-
 export function MentionVolumeChart() {
+  const { selectedBrand } = useAppStore();
+  const data = React.useMemo(
+    () => generateTimeSeriesData(selectedBrand || 'brand1', 30),
+    [selectedBrand]
+  );
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -45,22 +59,22 @@ export function MentionVolumeChart() {
             <AreaChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id="positive" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/>
-                  <stop offset="95%" stopColor="#10b981" stopOpacity={0.1}/>
+                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.8} />
+                  <stop offset="95%" stopColor="#10b981" stopOpacity={0.1} />
                 </linearGradient>
                 <linearGradient id="negative" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#ef4444" stopOpacity={0.8}/>
-                  <stop offset="95%" stopColor="#ef4444" stopOpacity={0.1}/>
+                  <stop offset="5%" stopColor="#ef4444" stopOpacity={0.8} />
+                  <stop offset="95%" stopColor="#ef4444" stopOpacity={0.1} />
                 </linearGradient>
                 <linearGradient id="neutral" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#6b7280" stopOpacity={0.8}/>
-                  <stop offset="95%" stopColor="#6b7280" stopOpacity={0.1}/>
+                  <stop offset="5%" stopColor="#6b7280" stopOpacity={0.8} />
+                  <stop offset="95%" stopColor="#6b7280" stopOpacity={0.1} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="date" />
               <YAxis />
-              <Tooltip 
+              <Tooltip
                 content={({ active, payload, label }) => {
                   if (active && payload && payload.length) {
                     return (
@@ -77,27 +91,9 @@ export function MentionVolumeChart() {
                   return null;
                 }}
               />
-              <Area
-                type="monotone"
-                dataKey="positive"
-                stackId="1"
-                stroke="#10b981"
-                fill="url(#positive)"
-              />
-              <Area
-                type="monotone"
-                dataKey="neutral"
-                stackId="1"
-                stroke="#6b7280"
-                fill="url(#neutral)"
-              />
-              <Area
-                type="monotone"
-                dataKey="negative"
-                stackId="1"
-                stroke="#ef4444"
-                fill="url(#negative)"
-              />
+              <Area type="monotone" dataKey="positive" stackId="1" stroke="#10b981" fill="url(#positive)" />
+              <Area type="monotone" dataKey="neutral" stackId="1" stroke="#6b7280" fill="url(#neutral)" />
+              <Area type="monotone" dataKey="negative" stackId="1" stroke="#ef4444" fill="url(#negative)" />
               <Brush dataKey="date" height={30} stroke="#8884d8" />
             </AreaChart>
           </ResponsiveContainer>
