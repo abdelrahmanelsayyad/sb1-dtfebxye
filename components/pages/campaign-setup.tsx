@@ -148,8 +148,14 @@ export function CampaignSetup() {
 
   const launchCampaign = async () => {
     console.log('Launching campaign with data:', formData);
-    const webhookUrl =
-      'https://n8n.srv872107.hstgr.cloud/webhook/8d7fd1cb-4b17-409b-b890-73fb176a1673';
+    
+    const webhookUrl = process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL;
+    
+    if (!webhookUrl) {
+      console.error('N8N webhook URL not configured. Please set NEXT_PUBLIC_N8N_WEBHOOK_URL in your environment variables.');
+      return;
+    }
+    
     try {
       const res = await fetch(webhookUrl, {
         method: 'POST',
@@ -661,7 +667,7 @@ export function CampaignSetup() {
                       ))}
                       {formData.languages.length > 5 && (
                         <Badge variant="secondary" className="text-xs">
-                          +{formData.languages.length - 5} more
+                          +{formData.languages.length - 5}
                         </Badge>
                       )}
                     </div>
