@@ -146,6 +146,28 @@ export function CampaignSetup() {
     }
   };
 
+  const launchCampaign = async () => {
+    console.log('Launching campaign with data:', formData);
+    const webhookUrl = process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL;
+    if (!webhookUrl) {
+      console.error('N8N webhook URL is not defined');
+      return;
+    }
+    try {
+      const res = await fetch(webhookUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+      const data = await res.json().catch(() => null);
+      console.log('n8n webhook response:', data);
+    } catch (error) {
+      console.error('Error sending data to n8n webhook:', error);
+    }
+  };
+
   const progress = (currentStep / steps.length) * 100;
 
   const renderStepContent = () => {
@@ -912,11 +934,7 @@ export function CampaignSetup() {
               </Button>
             ) : (
               <Button
-                onClick={() => {
-                  // Handle campaign launch
-                  console.log('Launching campaign with data:', formData);
-                  // You would typically send this data to your backend here
-                }}
+                onClick={launchCampaign}
                 className="flex items-center space-x-2 bg-green-600 hover:bg-green-700 text-white px-8 py-3 text-lg"
               >
                 <Zap className="w-5 h-5" />
