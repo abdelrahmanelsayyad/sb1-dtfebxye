@@ -148,11 +148,8 @@ export function CampaignSetup() {
 
   const launchCampaign = async () => {
     console.log('Launching campaign with data:', formData);
-    const webhookUrl = process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL;
-    if (!webhookUrl) {
-      console.error('N8N webhook URL is not defined');
-      return;
-    }
+    const webhookUrl =
+      'https://n8n.srv872107.hstgr.cloud/webhook-test/8d7fd1cb-4b17-409b-b890-73fb176a1673';
     try {
       const res = await fetch(webhookUrl, {
         method: 'POST',
