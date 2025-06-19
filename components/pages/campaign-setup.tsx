@@ -146,13 +146,11 @@ export function CampaignSetup() {
     }
   };
 
-  const WEBHOOK_URL = 'https://n8n.srv872107.hstgr.cloud/webhook/8d7fd1cb-4b17-409b-b890-73fb176a1673';
-
   const launchCampaign = async () => {
     console.log('Launching campaign with data:', formData);
 
     try {
-      const res = await fetch(WEBHOOK_URL, {
+      const res = await fetch('/api/launch-campaign', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
