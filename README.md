@@ -4,10 +4,12 @@
 
 ## Environment
 
-Create a `.env.local` file with your n8n webhook URL:
+No environment variables are required for the n8n integration. The webhook URL
+is embedded directly in the code:
 
-```bash
-NEXT_PUBLIC_N8N_WEBHOOK_URL=https://n8n.srv872107.hstgr.cloud/webhook/8d7fd1cb-4b17-409b-b890-73fb176a1673
+```
+https://n8n.srv872107.hstgr.cloud/webhook/8d7fd1cb-4b17-409b-b890-73fb176a1673
 ```
 
-This value is used when launching a social listening campaign.
+All campaign details are posted to this endpoint when a user launches a social
+listening campaign.
