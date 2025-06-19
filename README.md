@@ -4,11 +4,11 @@
 
 ## Environment
 
-No environment variables are required for the n8n integration. The webhook URL
-is embedded directly in the code:
+Set the `N8N_WEBHOOK_URL` environment variable to the URL of your n8n webhook.
+An example value is included in `.env.example`:
 
-```
-https://n8n.srv872107.hstgr.cloud/webhook/8d7fd1cb-4b17-409b-b890-73fb176a1673
+```env
+N8N_WEBHOOK_URL=https://n8n.srv872107.hstgr.cloud/webhook/8d7fd1cb-4b17-409b-b890-73fb176a1673
 ```
 
 All campaign details are posted to this endpoint when a user launches a social
