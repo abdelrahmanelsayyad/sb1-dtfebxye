@@ -18,11 +18,21 @@ export async function POST(req: Request) {
       body: JSON.stringify(body),
     });
 
+    if (!res.ok) {
+      const message = await res.text().catch(() => 'Unknown error');
+      console.error('n8n webhook responded with non-ok status:', res.status, message);
+      return NextResponse.json(
+        { ok: false, error: `Webhook request failed with status ${res.status}` },
+        { status: 500 }
+      );
+    }
+
     const data = await res.json().catch(() => null);
 
     return NextResponse.json({ ok: true, data });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error forwarding to n8n webhook:', error);
-    return NextResponse.json({ ok: false, error: 'Failed to forward request' }, { status: 500 });
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return NextResponse.json({ ok: false, error: `Failed to forward request: ${message}` }, { status: 500 });
   }
 }
