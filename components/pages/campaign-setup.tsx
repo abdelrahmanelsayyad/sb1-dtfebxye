@@ -81,7 +81,7 @@ const industries = [
 
 export function CampaignSetup() {
   const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<Record<string, any>>({
     // Brand Details
     brandName: '',
     companyName: '',
@@ -109,7 +109,7 @@ export function CampaignSetup() {
     historicalData: '30days'
   });
 
-  const [tempInputs, setTempInputs] = useState({
+  const [tempInputs, setTempInputs] = useState<Record<string, string>>({
     brandKeywords: '',
     productKeywords: '',
     hashtags: '',
@@ -125,13 +125,15 @@ export function CampaignSetup() {
   };
 
   const addToArray = (field: string, value: string) => {
-    if (value.trim() && !formData[field].includes(value.trim())) {
-      updateFormData(field, [...formData[field], value.trim()]);
+    const arr = formData[field] as string[];
+    if (value.trim() && !arr.includes(value.trim())) {
+      updateFormData(field, [...arr, value.trim()]);
     }
   };
 
   const removeFromArray = (field: string, value: string) => {
-    updateFormData(field, formData[field].filter(item => item !== value));
+    const arr = formData[field] as string[];
+    updateFormData(field, arr.filter((item: string) => item !== value));
   };
 
   const nextStep = () => {
@@ -211,7 +213,7 @@ export function CampaignSetup() {
                     <SelectValue placeholder="Select your industry" />
                   </SelectTrigger>
                   <SelectContent>
-                    {industries.map((industry) => (
+                    {industries.map((industry: string) => (
                       <SelectItem key={industry} value={industry.toLowerCase()}>
                         {industry}
                       </SelectItem>
@@ -291,7 +293,7 @@ export function CampaignSetup() {
                     </Button>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    {formData.brandKeywords.map((keyword, index) => (
+                    {formData.brandKeywords.map((keyword: string, index: number) => (
                       <Badge key={index} variant="secondary" className="flex items-center space-x-1">
                         <span>{keyword}</span>
                         <X 
@@ -336,7 +338,7 @@ export function CampaignSetup() {
                     </Button>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    {formData.productKeywords.map((keyword, index) => (
+                    {formData.productKeywords.map((keyword: string, index: number) => (
                       <Badge key={index} variant="secondary" className="flex items-center space-x-1">
                         <span>{keyword}</span>
                         <X 
@@ -381,7 +383,7 @@ export function CampaignSetup() {
                     </Button>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    {formData.hashtags.map((hashtag, index) => (
+                    {formData.hashtags.map((hashtag: string, index: number) => (
                       <Badge key={index} variant="secondary" className="flex items-center space-x-1">
                         <span>#{hashtag}</span>
                         <X 
@@ -426,7 +428,7 @@ export function CampaignSetup() {
                     </Button>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    {formData.excludeKeywords.map((keyword, index) => (
+                    {formData.excludeKeywords.map((keyword: string, index: number) => (
                       <Badge key={index} variant="destructive" className="flex items-center space-x-1">
                         <span>{keyword}</span>
                         <X 
@@ -458,7 +460,7 @@ export function CampaignSetup() {
             <div className="mb-6">
               <h3 className="text-lg font-semibold mb-4">Popular Platforms</h3>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {platforms.filter(p => p.popular).map((platform) => (
+                {platforms.filter(p => p.popular).map((platform: any) => (
                   <Card 
                     key={platform.id}
                     className={`cursor-pointer transition-all duration-200 hover:shadow-lg ${
@@ -468,7 +470,7 @@ export function CampaignSetup() {
                     }`}
                     onClick={() => {
                       const platforms = formData.selectedPlatforms.includes(platform.id)
-                        ? formData.selectedPlatforms.filter(p => p !== platform.id)
+                        ? formData.selectedPlatforms.filter((p: string) => p !== platform.id)
                         : [...formData.selectedPlatforms, platform.id];
                       updateFormData('selectedPlatforms', platforms);
                     }}
@@ -490,7 +492,7 @@ export function CampaignSetup() {
             <div className="mb-6">
               <h3 className="text-lg font-semibold mb-4">Additional Platforms</h3>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                {platforms.filter(p => !p.popular).map((platform) => (
+                {platforms.filter(p => !p.popular).map((platform: any) => (
                   <Card 
                     key={platform.id}
                     className={`cursor-pointer transition-all duration-200 hover:shadow-lg ${
@@ -500,7 +502,7 @@ export function CampaignSetup() {
                     }`}
                     onClick={() => {
                       const platforms = formData.selectedPlatforms.includes(platform.id)
-                        ? formData.selectedPlatforms.filter(p => p !== platform.id)
+                        ? formData.selectedPlatforms.filter((p: string) => p !== platform.id)
                         : [...formData.selectedPlatforms, platform.id];
                       updateFormData('selectedPlatforms', platforms);
                     }}
@@ -529,7 +531,7 @@ export function CampaignSetup() {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {formData.selectedPlatforms.map((platformId) => {
+                  {formData.selectedPlatforms.map((platformId: string) => {
                     const platform = platforms.find(p => p.id === platformId);
                     return (
                       <div key={platformId} className="space-y-2">
@@ -576,7 +578,7 @@ export function CampaignSetup() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 gap-2 max-h-64 overflow-y-auto">
-                    {countries.map((country) => (
+                    {countries.map((country: string) => (
                       <div key={country} className="flex items-center space-x-2">
                         <Checkbox
                           id={country}
@@ -585,7 +587,7 @@ export function CampaignSetup() {
                             if (checked) {
                               updateFormData('targetCountries', [...formData.targetCountries, country]);
                             } else {
-                              updateFormData('targetCountries', formData.targetCountries.filter(c => c !== country));
+                              updateFormData('targetCountries', formData.targetCountries.filter((c: string) => c !== country));
                             }
                           }}
                         />
@@ -606,7 +608,7 @@ export function CampaignSetup() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 gap-2 max-h-64 overflow-y-auto">
-                    {languages.map((language) => (
+                    {languages.map((language: string) => (
                       <div key={language} className="flex items-center space-x-2">
                         <Checkbox
                           id={language}
@@ -615,7 +617,7 @@ export function CampaignSetup() {
                             if (checked) {
                               updateFormData('languages', [...formData.languages, language]);
                             } else {
-                              updateFormData('languages', formData.languages.filter(l => l !== language));
+                              updateFormData('languages', formData.languages.filter((l: string) => l !== language));
                             }
                           }}
                         />
@@ -636,7 +638,7 @@ export function CampaignSetup() {
                       Selected Countries ({formData.targetCountries.length})
                     </h4>
                     <div className="flex flex-wrap gap-1">
-                      {formData.targetCountries.slice(0, 5).map((country) => (
+                      {formData.targetCountries.slice(0, 5).map((country: string) => (
                         <Badge key={country} variant="secondary" className="text-xs">
                           {country}
                         </Badge>
@@ -653,7 +655,7 @@ export function CampaignSetup() {
                       Selected Languages ({formData.languages.length})
                     </h4>
                     <div className="flex flex-wrap gap-1">
-                      {formData.languages.slice(0, 5).map((language) => (
+                      {formData.languages.slice(0, 5).map((language: string) => (
                         <Badge key={language} variant="secondary" className="text-xs">
                           {language}
                         </Badge>
@@ -750,7 +752,7 @@ export function CampaignSetup() {
                     <div>
                       <h4 className="font-medium mb-2">Brand Keywords</h4>
                       <div className="flex flex-wrap gap-1">
-                        {formData.brandKeywords.slice(0, 5).map((keyword) => (
+                        {formData.brandKeywords.slice(0, 5).map((keyword: string) => (
                           <Badge key={keyword} variant="secondary" className="text-xs">
                             {keyword}
                           </Badge>
@@ -765,7 +767,7 @@ export function CampaignSetup() {
                     <div>
                       <h4 className="font-medium mb-2">Product Keywords</h4>
                       <div className="flex flex-wrap gap-1">
-                        {formData.productKeywords.slice(0, 5).map((keyword) => (
+                        {formData.productKeywords.slice(0, 5).map((keyword: string) => (
                           <Badge key={keyword} variant="secondary" className="text-xs">
                             {keyword}
                           </Badge>
@@ -780,7 +782,7 @@ export function CampaignSetup() {
                     <div>
                       <h4 className="font-medium mb-2">Hashtags</h4>
                       <div className="flex flex-wrap gap-1">
-                        {formData.hashtags.slice(0, 5).map((hashtag) => (
+                        {formData.hashtags.slice(0, 5).map((hashtag: string) => (
                           <Badge key={hashtag} variant="secondary" className="text-xs">
                             #{hashtag}
                           </Badge>
@@ -861,7 +863,7 @@ export function CampaignSetup() {
 
           {/* Step Indicators */}
           <div className="flex items-center justify-center space-x-2 mb-8 overflow-x-auto pb-2">
-            {steps.map((step, index) => {
+            {steps.map((step: any, index: number) => {
               const StepIcon = step.icon;
               const isActive = currentStep === step.id;
               const isCompleted = currentStep > step.id;

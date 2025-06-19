@@ -17,9 +17,9 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 
 const navigationItems = [
-  { id: 'dashboard', label: 'Dashboard', icon: Home, badge: null },
-  { id: 'reports', label: 'Reports', icon: FileText, badge: null },
-  { id: 'settings', label: 'Settings', icon: Settings, badge: null }
+  { id: 'dashboard', label: 'Dashboard', icon: Home, badge: null, highlight: false },
+  { id: 'reports', label: 'Reports', icon: FileText, badge: null, highlight: true },
+  { id: 'settings', label: 'Settings', icon: Settings, badge: null, highlight: false }
 ];
 
 export function Sidebar() {
