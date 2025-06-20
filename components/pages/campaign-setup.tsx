@@ -11,10 +11,8 @@ import {
   Search, 
   Globe,
   Target,
-  Settings,
   Zap,
   Eye,
-  Bell,
   Calendar,
   Hash,
   AtSign,
@@ -22,7 +20,9 @@ import {
   Languages,
   Smartphone,
   Building,
-  Sparkles
+  Sparkles,
+  FileText,
+  TrendingUp
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -30,7 +30,6 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Progress } from '@/components/ui/progress';
 import {
@@ -41,14 +40,17 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import { useAppStore } from '@/lib/store';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import ReactMarkdown from 'react-markdown';
 
 const steps = [
   { id: 1, title: 'Brand Details', icon: Building, description: 'Basic information about your brand' },
-  { id: 2, title: 'Keywords & Hashtags', icon: Hash, description: 'What to monitor across platforms' },
+  { id: 2, title: 'Keywords & Hashtags', icon: Hash, description: 'What to track across platforms' },
   { id: 3, title: 'Social Platforms', icon: Smartphone, description: 'Where to listen for mentions' },
   { id: 4, title: 'Geographic & Language', icon: Globe, description: 'Target regions and languages' },
-  { id: 5, title: 'Alerts & Notifications', icon: Bell, description: 'How to stay informed' },
-  { id: 6, title: 'Review & Launch', icon: Zap, description: 'Finalize your campaign' }
+  { id: 5, title: 'Review & Launch', icon: Zap, description: 'Finalize your campaign' },
+  { id: 6, title: 'Results & Reports', icon: FileText, description: 'View your campaign results' }
 ];
 
 const platforms = [
@@ -65,9 +67,9 @@ const platforms = [
 ];
 
 const countries = [
-  'United States', 'United Kingdom', 'Canada', 'Australia', 'Germany', 
-  'France', 'Spain', 'Italy', 'Netherlands', 'Brazil', 'Mexico', 'Japan', 
-  'South Korea', 'India', 'Singapore', 'UAE', 'South Africa'
+  'United States', 'United Kingdom', 'Canada', 'Australia', 'Germany',
+  'France', 'Spain', 'Italy', 'Netherlands', 'Brazil', 'Mexico', 'Japan',
+  'South Korea', 'India', 'Singapore', 'UAE', 'South Africa', 'Saudi Arabia', 'Egypt'
 ];
 
 const languages = [
@@ -79,12 +81,18 @@ const languages = [
 const industries = [
   'Technology', 'Healthcare', 'Finance', 'Retail', 'Food & Beverage', 
   'Fashion', 'Automotive', 'Travel', 'Entertainment', 'Education', 
-  'Real Estate', 'Sports', 'Beauty', 'Gaming', 'Other'
+  'Real Estate', 'Sports', 'Beauty', 'Gaming', 'Telecommunications', 'Other'
 ];
 
 export function CampaignSetup() {
+  const { createCampaign, setCurrentPage } = useAppStore();
   const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState({
+  const [campaignResults, setCampaignResults] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedReport, setSelectedReport] = useState<any>(null);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [formData, setFormData] = useState<Record<string, any>>({
     // Brand Details
     brandName: '',
     companyName: '',
@@ -107,19 +115,12 @@ export function CampaignSetup() {
     languages: ['English'],
     
     
-    // Alerts & Notifications
-    emailAlerts: true,
-    alertFrequency: 'daily',
-    alertThreshold: 'medium',
-    webhookUrl: '',
-    
-    // Advanced Settings
     sentimentTracking: true,
     influencerTracking: true,
     historicalData: '30days'
   });
 
-  const [tempInputs, setTempInputs] = useState({
+  const [tempInputs, setTempInputs] = useState<Record<string, string>>({
     brandKeywords: '',
     productKeywords: '',
     hashtags: '',
@@ -135,13 +136,15 @@ export function CampaignSetup() {
   };
 
   const addToArray = (field: string, value: string) => {
-    if (value.trim() && !formData[field].includes(value.trim())) {
-      updateFormData(field, [...formData[field], value.trim()]);
+    const arr = formData[field] as string[];
+    if (value.trim() && !arr.includes(value.trim())) {
+      updateFormData(field, [...arr, value.trim()]);
     }
   };
 
   const removeFromArray = (field: string, value: string) => {
-    updateFormData(field, formData[field].filter(item => item !== value));
+    const arr = formData[field] as string[];
+    updateFormData(field, arr.filter((item: string) => item !== value));
   };
 
   const nextStep = () => {
@@ -153,6 +156,74 @@ export function CampaignSetup() {
   const prevStep = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
+    }
+  };
+
+  const isStep5Valid = () => {
+    return (
+      formData.brandName.trim() !== '' &&
+      formData.industry.trim() !== '' &&
+      (formData.brandKeywords.length + formData.productKeywords.length + formData.hashtags.length) > 0
+    );
+  };
+
+  const launchCampaign = async () => {
+    console.log('Launching social listening campaign with data:', formData);
+    setIsLoading(true);
+    setError(null);
+    setCurrentStep(6);
+
+    try {
+      // Create campaign in store
+      const campaignData = {
+        name: formData.brandName || 'Social Listening Campaign',
+        keywords: [...formData.brandKeywords, ...formData.productKeywords, ...formData.hashtags],
+        platforms: formData.selectedPlatforms,
+        status: 'running' as const,
+        settings: {
+          resultsCount: 500,
+          timeWindow: 30,
+          maxPosts: 200,
+          maxComments: 50
+        }
+      };
+
+      // Add to store
+      createCampaign(campaignData);
+
+      // Call social listening API
+      const res = await fetch('/api/social-listening', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: campaignData.name,
+          keywords: campaignData.keywords,
+          platforms: campaignData.platforms,
+          settings: campaignData.settings,
+          generateReport: true,
+          socialHandles: formData.socialHandles
+        }),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({ error: 'Unknown error' }));
+        throw new Error(errorData.error || `HTTP ${res.status}: ${res.statusText}`);
+      }
+
+      const result = await res.json();
+      console.log('Social listening campaign result:', result);
+      
+      setCampaignResults(result.data);
+      // Store results in global store for dashboard access
+      useAppStore.getState().setCurrentCampaignResults(result.data);
+
+    } catch (error) {
+      console.error('Error launching social listening campaign:', error);
+      setError(error instanceof Error ? error.message : 'Failed to launch campaign');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -203,7 +274,7 @@ export function CampaignSetup() {
                     <SelectValue placeholder="Select your industry" />
                   </SelectTrigger>
                   <SelectContent>
-                    {industries.map((industry) => (
+                    {industries.map((industry: string) => (
                       <SelectItem key={industry} value={industry.toLowerCase()}>
                         {industry}
                       </SelectItem>
@@ -246,7 +317,7 @@ export function CampaignSetup() {
                 Keywords & Hashtags
               </h2>
               <p className="text-gray-600 dark:text-gray-400">
-                Define what to monitor across social media platforms
+                Define what to track across social media platforms
               </p>
             </div>
 
@@ -283,7 +354,7 @@ export function CampaignSetup() {
                     </Button>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    {formData.brandKeywords.map((keyword, index) => (
+                    {formData.brandKeywords.map((keyword: string, index: number) => (
                       <Badge key={index} variant="secondary" className="flex items-center space-x-1">
                         <span>{keyword}</span>
                         <X 
@@ -328,7 +399,7 @@ export function CampaignSetup() {
                     </Button>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    {formData.productKeywords.map((keyword, index) => (
+                    {formData.productKeywords.map((keyword: string, index: number) => (
                       <Badge key={index} variant="secondary" className="flex items-center space-x-1">
                         <span>{keyword}</span>
                         <X 
@@ -373,7 +444,7 @@ export function CampaignSetup() {
                     </Button>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    {formData.hashtags.map((hashtag, index) => (
+                    {formData.hashtags.map((hashtag: string, index: number) => (
                       <Badge key={index} variant="secondary" className="flex items-center space-x-1">
                         <span>#{hashtag}</span>
                         <X 
@@ -418,7 +489,7 @@ export function CampaignSetup() {
                     </Button>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    {formData.excludeKeywords.map((keyword, index) => (
+                    {formData.excludeKeywords.map((keyword: string, index: number) => (
                       <Badge key={index} variant="destructive" className="flex items-center space-x-1">
                         <span>{keyword}</span>
                         <X 
@@ -443,14 +514,14 @@ export function CampaignSetup() {
                 Social Platforms
               </h2>
               <p className="text-gray-600 dark:text-gray-400">
-                Choose which platforms to monitor for mentions
+                Choose which platforms to track for mentions
               </p>
             </div>
 
             <div className="mb-6">
               <h3 className="text-lg font-semibold mb-4">Popular Platforms</h3>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {platforms.filter(p => p.popular).map((platform) => (
+                {platforms.filter(p => p.popular).map((platform: any) => (
                   <Card 
                     key={platform.id}
                     className={`cursor-pointer transition-all duration-200 hover:shadow-lg ${
@@ -460,7 +531,7 @@ export function CampaignSetup() {
                     }`}
                     onClick={() => {
                       const platforms = formData.selectedPlatforms.includes(platform.id)
-                        ? formData.selectedPlatforms.filter(p => p !== platform.id)
+                        ? formData.selectedPlatforms.filter((p: string) => p !== platform.id)
                         : [...formData.selectedPlatforms, platform.id];
                       updateFormData('selectedPlatforms', platforms);
                     }}
@@ -482,7 +553,7 @@ export function CampaignSetup() {
             <div className="mb-6">
               <h3 className="text-lg font-semibold mb-4">Additional Platforms</h3>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                {platforms.filter(p => !p.popular).map((platform) => (
+                {platforms.filter(p => !p.popular).map((platform: any) => (
                   <Card 
                     key={platform.id}
                     className={`cursor-pointer transition-all duration-200 hover:shadow-lg ${
@@ -492,7 +563,7 @@ export function CampaignSetup() {
                     }`}
                     onClick={() => {
                       const platforms = formData.selectedPlatforms.includes(platform.id)
-                        ? formData.selectedPlatforms.filter(p => p !== platform.id)
+                        ? formData.selectedPlatforms.filter((p: string) => p !== platform.id)
                         : [...formData.selectedPlatforms, platform.id];
                       updateFormData('selectedPlatforms', platforms);
                     }}
@@ -516,12 +587,12 @@ export function CampaignSetup() {
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <AtSign className="w-5 h-5" />
-                  <span>Your Social Handles (Optional)</span>
+                    <span>Your Social Handles</span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {formData.selectedPlatforms.map((platformId) => {
+                  {formData.selectedPlatforms.map((platformId: string) => {
                     const platform = platforms.find(p => p.id === platformId);
                     return (
                       <div key={platformId} className="space-y-2">
@@ -553,7 +624,7 @@ export function CampaignSetup() {
                 Geographic & Language Settings
               </h2>
               <p className="text-gray-600 dark:text-gray-400">
-                Define your target regions and languages for monitoring
+                Define your target regions and languages for tracking
               </p>
             </div>
 
@@ -568,7 +639,7 @@ export function CampaignSetup() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 gap-2 max-h-64 overflow-y-auto">
-                    {countries.map((country) => (
+                    {countries.map((country: string) => (
                       <div key={country} className="flex items-center space-x-2">
                         <Checkbox
                           id={country}
@@ -577,7 +648,7 @@ export function CampaignSetup() {
                             if (checked) {
                               updateFormData('targetCountries', [...formData.targetCountries, country]);
                             } else {
-                              updateFormData('targetCountries', formData.targetCountries.filter(c => c !== country));
+                              updateFormData('targetCountries', formData.targetCountries.filter((c: string) => c !== country));
                             }
                           }}
                         />
@@ -598,7 +669,7 @@ export function CampaignSetup() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 gap-2 max-h-64 overflow-y-auto">
-                    {languages.map((language) => (
+                    {languages.map((language: string) => (
                       <div key={language} className="flex items-center space-x-2">
                         <Checkbox
                           id={language}
@@ -607,7 +678,7 @@ export function CampaignSetup() {
                             if (checked) {
                               updateFormData('languages', [...formData.languages, language]);
                             } else {
-                              updateFormData('languages', formData.languages.filter(l => l !== language));
+                              updateFormData('languages', formData.languages.filter((l: string) => l !== language));
                             }
                           }}
                         />
@@ -628,7 +699,7 @@ export function CampaignSetup() {
                       Selected Countries ({formData.targetCountries.length})
                     </h4>
                     <div className="flex flex-wrap gap-1">
-                      {formData.targetCountries.slice(0, 5).map((country) => (
+                      {formData.targetCountries.slice(0, 5).map((country: string) => (
                         <Badge key={country} variant="secondary" className="text-xs">
                           {country}
                         </Badge>
@@ -645,14 +716,14 @@ export function CampaignSetup() {
                       Selected Languages ({formData.languages.length})
                     </h4>
                     <div className="flex flex-wrap gap-1">
-                      {formData.languages.slice(0, 5).map((language) => (
+                      {formData.languages.slice(0, 5).map((language: string) => (
                         <Badge key={language} variant="secondary" className="text-xs">
                           {language}
                         </Badge>
                       ))}
                       {formData.languages.length > 5 && (
                         <Badge variant="secondary" className="text-xs">
-                          +{formData.languages.length - 5} more
+                          +{formData.languages.length - 5}
                         </Badge>
                       )}
                     </div>
@@ -664,155 +735,6 @@ export function CampaignSetup() {
         );
 
       case 5:
-        return (
-          <div className="space-y-6">
-            <div className="text-center mb-8">
-              <Bell className="w-16 h-16 text-yellow-600 mx-auto mb-4" />
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                Alerts & Notifications
-              </h2>
-              <p className="text-gray-600 dark:text-gray-400">
-                Configure how you want to be notified about mentions
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Email Alerts */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Bell className="w-5 h-5" />
-                    <span>Email Alerts</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label htmlFor="emailAlerts">Enable Email Alerts</Label>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Receive email notifications for new mentions
-                      </p>
-                    </div>
-                    <Switch
-                      id="emailAlerts"
-                      checked={formData.emailAlerts}
-                      onCheckedChange={(checked) => updateFormData('emailAlerts', checked)}
-                    />
-                  </div>
-
-                  {formData.emailAlerts && (
-                    <>
-                      <div className="space-y-2">
-                        <Label htmlFor="alertFrequency">Alert Frequency</Label>
-                        <Select 
-                          value={formData.alertFrequency} 
-                          onValueChange={(value) => updateFormData('alertFrequency', value)}
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="realtime">Real-time</SelectItem>
-                            <SelectItem value="hourly">Hourly</SelectItem>
-                            <SelectItem value="daily">Daily</SelectItem>
-                            <SelectItem value="weekly">Weekly</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="alertThreshold">Alert Threshold</Label>
-                        <Select 
-                          value={formData.alertThreshold} 
-                          onValueChange={(value) => updateFormData('alertThreshold', value)}
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="all">All mentions</SelectItem>
-                            <SelectItem value="high">High impact only</SelectItem>
-                            <SelectItem value="medium">Medium+ impact</SelectItem>
-                            <SelectItem value="negative">Negative sentiment only</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Advanced Settings */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Settings className="w-5 h-5" />
-                    <span>Advanced Settings</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label htmlFor="sentimentTracking">Sentiment Analysis</Label>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Analyze sentiment of mentions
-                      </p>
-                    </div>
-                    <Switch
-                      id="sentimentTracking"
-                      checked={formData.sentimentTracking}
-                      onCheckedChange={(checked) => updateFormData('sentimentTracking', checked)}
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label htmlFor="influencerTracking">Influencer Tracking</Label>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Identify influential mentions
-                      </p>
-                    </div>
-                    <Switch
-                      id="influencerTracking"
-                      checked={formData.influencerTracking}
-                      onCheckedChange={(checked) => updateFormData('influencerTracking', checked)}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="historicalData">Historical Data</Label>
-                    <Select 
-                      value={formData.historicalData} 
-                      onValueChange={(value) => updateFormData('historicalData', value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="7days">Last 7 days</SelectItem>
-                        <SelectItem value="30days">Last 30 days</SelectItem>
-                        <SelectItem value="90days">Last 90 days</SelectItem>
-                        <SelectItem value="1year">Last year</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="webhookUrl">Webhook URL (Optional)</Label>
-                    <Input
-                      id="webhookUrl"
-                      placeholder="https://your-webhook-url.com"
-                      value={formData.webhookUrl}
-                      onChange={(e) => updateFormData('webhookUrl', e.target.value)}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        );
-
-      case 6:
         return (
           <div className="space-y-6">
             <div className="text-center mb-8">
@@ -883,7 +805,7 @@ export function CampaignSetup() {
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
                     <Hash className="w-5 h-5" />
-                    <span>Monitoring Keywords</span>
+                    <span>Keywords</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -891,7 +813,7 @@ export function CampaignSetup() {
                     <div>
                       <h4 className="font-medium mb-2">Brand Keywords</h4>
                       <div className="flex flex-wrap gap-1">
-                        {formData.brandKeywords.slice(0, 5).map((keyword) => (
+                        {formData.brandKeywords.slice(0, 5).map((keyword: string) => (
                           <Badge key={keyword} variant="secondary" className="text-xs">
                             {keyword}
                           </Badge>
@@ -906,7 +828,7 @@ export function CampaignSetup() {
                     <div>
                       <h4 className="font-medium mb-2">Product Keywords</h4>
                       <div className="flex flex-wrap gap-1">
-                        {formData.productKeywords.slice(0, 5).map((keyword) => (
+                        {formData.productKeywords.slice(0, 5).map((keyword: string) => (
                           <Badge key={keyword} variant="secondary" className="text-xs">
                             {keyword}
                           </Badge>
@@ -921,7 +843,7 @@ export function CampaignSetup() {
                     <div>
                       <h4 className="font-medium mb-2">Hashtags</h4>
                       <div className="flex flex-wrap gap-1">
-                        {formData.hashtags.slice(0, 5).map((hashtag) => (
+                        {formData.hashtags.slice(0, 5).map((hashtag: string) => (
                           <Badge key={hashtag} variant="secondary" className="text-xs">
                             #{hashtag}
                           </Badge>
@@ -945,27 +867,175 @@ export function CampaignSetup() {
                     Ready to Launch!
                   </h3>
                   <p className="text-gray-600 dark:text-gray-400 mb-4">
-                    Your social listening campaign is configured and ready to start monitoring mentions across all selected platforms.
+                    Your social listening campaign is configured and ready to start analysing mentions across all selected platforms.
                   </p>
                   <div className="flex items-center justify-center space-x-4 text-sm text-gray-600 dark:text-gray-400">
                     <div className="flex items-center space-x-1">
-                      <Eye className="w-4 h-4" />
-                      <span>Real-time monitoring</span>
-                    </div>
-                    <span>•</span>
-                    <div className="flex items-center space-x-1">
-                      <Zap className="w-4 h-4" />
-                      <span>Instant alerts</span>
-                    </div>
-                    <span>•</span>
-                    <div className="flex items-center space-x-1">
                       <Target className="w-4 h-4" />
                       <span>Smart analytics</span>
+                    </div>
+                    <span>•</span>
+                    <div className="flex items-center space-x-1">
+                      <FileText className="w-4 h-4" />
+                      <span>Full report generation</span>
                     </div>
                   </div>
                 </CardContent>
               </Card>
             </div>
+          </div>
+        );
+
+      case 6:
+        return (
+          <div className="space-y-6">
+            <div className="text-center mb-8">
+              <FileText className="w-16 h-16 text-green-600 mx-auto mb-4" />
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                Campaign Results
+              </h2>
+              <p className="text-gray-600 dark:text-gray-400">
+                Your social listening campaign has been completed successfully!
+              </p>
+            </div>
+
+            {campaignResults ? (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Results Summary */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center space-x-2">
+                      <TrendingUp className="w-5 h-5" />
+                      <span>Results Summary</span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600 dark:text-gray-400">Total Mentions:</span>
+                      <span className="font-medium">{campaignResults.totalMentions || 0}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600 dark:text-gray-400">Platforms Scraped:</span>
+                      <span className="font-medium">{campaignResults.processedData?.platforms?.length || 0}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600 dark:text-gray-400">Reports Generated:</span>
+                      <span className="font-medium">{campaignResults.reports ? Object.keys(campaignResults.reports).length : 0}</span>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Platform Distribution */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center space-x-2">
+                      <Smartphone className="w-5 h-5" />
+                      <span>Platform Distribution</span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {campaignResults.processedData?.platforms?.length > 0 ? (
+                      campaignResults.processedData.platforms.map((platform: any) => (
+                        <div key={platform.platform} className="flex justify-between items-center py-2">
+                          <span className="capitalize">{platform.platform}</span>
+                          <Badge variant="secondary">{platform.count} mentions</Badge>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-gray-500">No platform data available</p>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Scraping Errors */}
+                {campaignResults.errors && campaignResults.errors.length > 0 && (
+                  <Card className="lg:col-span-2 border-orange-200 bg-orange-50 dark:bg-orange-950/20 dark:border-orange-800">
+                    <CardHeader>
+                      <CardTitle className="flex items-center space-x-2 text-orange-800 dark:text-orange-200">
+                        <div className="w-5 h-5">⚠️</div>
+                        <span>Scraping Issues</span>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="list-disc list-inside space-y-1 text-sm text-orange-700 dark:text-orange-300">
+                        {campaignResults.errors.map((error: string, index: number) => (
+                          <li key={index}>{error}</li>
+                        ))}
+                      </ul>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Generated Reports */}
+                {campaignResults.reports && (
+                  <Card className="lg:col-span-2">
+                    <CardHeader>
+                      <CardTitle className="flex items-center space-x-2">
+                        <FileText className="w-5 h-5" />
+                        <span>Generated Reports</span>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {Object.entries(campaignResults.reports).map(([type, report]: [string, any]) => (
+                          <Card key={type} className="p-4">
+                            <div className="flex items-center justify-between mb-2">
+                              <h4 className="font-medium capitalize">{type} Report</h4>
+                              <Badge variant="outline">AI Generated</Badge>
+                            </div>
+                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                              {typeof report === 'string' ? report.substring(0, 150) : report.content?.substring(0, 150) || 'No preview available'}...
+                            </p>
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              className="w-full"
+                              onClick={() => {
+                                const reportContent = typeof report === 'string' ? report : report.content || '';
+                                console.log('Opening report:', { type, reportType: typeof report, contentLength: reportContent.length });
+                                setSelectedReport({ type, content: reportContent });
+                                setIsReportModalOpen(true);
+                              }}
+                            >
+                              <Eye className="w-4 h-4 mr-2" />
+                              View Full Report
+                            </Button>
+                          </Card>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Action Buttons */}
+                <Card className="lg:col-span-2">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-center space-x-4">
+                      <Button
+                        onClick={() => setCurrentPage('dashboard')}
+                        className="flex items-center space-x-2"
+                      >
+                        <TrendingUp className="w-4 h-4" />
+                        <span>Go to Dashboard</span>
+                      </Button>
+                      <Button
+                        onClick={() => setCurrentPage('reports')}
+                        variant="outline"
+                        className="flex items-center space-x-2"
+                      >
+                        <FileText className="w-4 h-4" />
+                        <span>View All Reports</span>
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <p className="text-gray-600 dark:text-gray-400">Loading campaign results...</p>
+              </div>
+            )}
           </div>
         );
 
@@ -976,9 +1046,30 @@ export function CampaignSetup() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
+      {selectedReport && (
+        <Dialog open={isReportModalOpen} onOpenChange={setIsReportModalOpen}>
+          <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
+            <DialogHeader>
+              <DialogTitle className="capitalize">{selectedReport.type} Report</DialogTitle>
+            </DialogHeader>
+            <div className="flex-1 overflow-y-auto p-4">
+              {selectedReport.content ? (
+                <div className="prose dark:prose-invert max-w-none">
+                  <ReactMarkdown>{selectedReport.content}</ReactMarkdown>
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-gray-500">No content available for this report.</p>
+                </div>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-8 max-w-6xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -988,12 +1079,12 @@ export function CampaignSetup() {
               Create Social Listening Campaign
             </h1>
             <p className="text-xl text-gray-600 dark:text-gray-400">
-              Set up comprehensive monitoring for your brand across all social platforms
+              Set up comprehensive tracking for your brand across all social platforms
             </p>
           </motion.div>
 
           {/* Progress Bar */}
-          <div className="max-w-4xl mx-auto mb-8">
+          <div className="max-w-6xl mx-auto mb-8">
             <div className="flex items-center justify-between mb-4">
               <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
                 Step {currentStep} of {steps.length}
@@ -1005,9 +1096,48 @@ export function CampaignSetup() {
             <Progress value={progress} className="h-2" />
           </div>
 
+          {/* Progress Bar for Scraping */}
+          {isLoading && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              className="mb-6"
+            >
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center space-x-4">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">Running campaign: {formData.brandName || 'Social Listening Campaign'}</p>
+                      <Progress value={progress} className="mt-2" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
+
+          {/* Error Display */}
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-6"
+            >
+              <Card className="border-red-200 bg-red-50 dark:bg-red-950/20 dark:border-red-800">
+                <CardContent className="p-4">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-5 h-5 text-red-600">⚠️</div>
+                    <p className="text-red-800 dark:text-red-200 font-medium">Error: {error}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
+
           {/* Step Indicators */}
           <div className="flex items-center justify-center space-x-2 mb-8 overflow-x-auto pb-2">
-            {steps.map((step, index) => {
+            {steps.map((step: any, index: number) => {
               const StepIcon = step.icon;
               const isActive = currentStep === step.id;
               const isCompleted = currentStep > step.id;
@@ -1076,15 +1206,21 @@ export function CampaignSetup() {
               </Button>
             ) : (
               <Button
-                onClick={() => {
-                  // Handle campaign launch
-                  console.log('Launching campaign with data:', formData);
-                  // You would typically send this data to your backend here
-                }}
+                onClick={launchCampaign}
+                disabled={isLoading || !isStep5Valid()}
                 className="flex items-center space-x-2 bg-green-600 hover:bg-green-700 text-white px-8 py-3 text-lg"
               >
-                <Zap className="w-5 h-5" />
-                <span>Launch Campaign</span>
+                {isLoading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    <span>Launching Campaign...</span>
+                  </>
+                ) : (
+                  <>
+                    <Zap className="w-5 h-5" />
+                    <span>Launch Campaign</span>
+                  </>
+                )}
               </Button>
             )}
           </div>

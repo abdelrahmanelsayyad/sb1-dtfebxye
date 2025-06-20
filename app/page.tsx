@@ -4,16 +4,13 @@ import React from 'react';
 import { useAppStore } from '@/lib/store';
 import { MainLayout } from '@/components/layout/main-layout';
 import { Dashboard } from '@/components/pages/dashboard';
-import { ProductIntelligence } from '@/components/pages/product-intelligence';
-import { BrandMonitoring } from '@/components/pages/brand-monitoring';
 import { CampaignSetup } from '@/components/pages/campaign-setup';
+import { Reports } from '@/components/pages/reports';
 
 const pageComponents = {
   dashboard: Dashboard,
-  monitoring: BrandMonitoring,
-  products: ProductIntelligence,
   setup: CampaignSetup,
-  reports: () => <div className="p-6"><h1 className="text-2xl font-bold">Reports</h1></div>,
+  reports: Reports,
   settings: () => <div className="p-6"><h1 className="text-2xl font-bold">Settings - Coming Soon</h1></div>,
 };
 

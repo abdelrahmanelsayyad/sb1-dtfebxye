@@ -3,11 +3,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { 
-  Home, 
-  Eye, 
-  BarChart3,
+  Home,
   FileText,
-  Settings, 
+  Settings,
   ChevronLeft,
   ChevronRight,
   TrendingUp,
@@ -19,11 +17,9 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 
 const navigationItems = [
-  { id: 'dashboard', label: 'Dashboard', icon: Home, badge: null },
-  { id: 'monitoring', label: 'Brand Monitoring', icon: Eye, badge: null },
-  { id: 'products', label: 'Product Intelligence', icon: BarChart3, badge: null },
-  { id: 'reports', label: 'Reports', icon: FileText, badge: null },
-  { id: 'settings', label: 'Settings', icon: Settings, badge: null }
+  { id: 'dashboard', label: 'Dashboard', icon: Home, badge: null, highlight: false },
+  { id: 'reports', label: 'Reports', icon: FileText, badge: null, highlight: false },
+  { id: 'settings', label: 'Settings', icon: Settings, badge: null, highlight: false }
 ];
 
 export function Sidebar() {
@@ -112,7 +108,7 @@ export function Sidebar() {
               {!sidebarCollapsed && (
                 <>
                   <span className="flex-1 text-left">{item.label}</span>
-                  {item.highlight && (
+                  {item.highlight && false && (
                     <Badge className="ml-2 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
                       New
                     </Badge>

@@ -12,6 +12,7 @@ export interface User {
 
 export interface Mention {
   id: string;
+  brandId: string;
   platform: Platform;
   user: User;
   content: string;
@@ -67,7 +68,6 @@ export interface Product {
   };
 }
 
-
 export interface Report {
   id: string;
   name: string;
@@ -83,8 +83,6 @@ export interface Report {
   format: 'pdf' | 'powerpoint' | 'excel';
   createdAt: string;
 }
-
-
 
 export interface KPICard {
   title: string;
@@ -117,4 +115,67 @@ export interface PlatformData {
   engagement: number;
   sentiment: number;
   color: string;
+}
+
+// Social Listening Types
+export interface SocialListeningCampaign {
+  id: string;
+  name: string;
+  keywords: string[];
+  platforms: string[];
+  status: 'draft' | 'running' | 'completed' | 'failed';
+  createdAt: Date;
+  updatedAt: Date;
+  settings: {
+    resultsCount: number;
+    timeWindow: number;
+    maxPosts: number;
+    maxComments: number;
+  };
+}
+
+export interface ScrapedData {
+  id: string;
+  campaignId: string;
+  platform: 'twitter' | 'instagram' | 'reddit' | 'facebook';
+  data: any[];
+  scrapedAt: Date;
+  status: 'pending' | 'completed' | 'failed';
+  error?: string;
+}
+
+export interface SocialMention {
+  id: string;
+  platform: 'twitter' | 'instagram' | 'reddit' | 'facebook';
+  content: string;
+  author: string;
+  timestamp: Date;
+  engagement?: {
+    likes?: number;
+    comments?: number;
+    shares?: number;
+  };
+  sentiment?: 'positive' | 'negative' | 'neutral';
+  sentimentScore?: number;
+  url?: string;
+  hashtags?: string[];
+  keywords?: string[];
+}
+
+export interface GeneratedReport {
+  id: string;
+  campaignId: string;
+  title: string;
+  type: 'summary' | 'sentiment' | 'trends' | 'recommendations';
+  content: string;
+  insights: string[];
+  metrics: {
+    totalMentions: number;
+    positiveMentions: number;
+    negativeMentions: number;
+    neutralMentions: number;
+    topPlatforms: { platform: string; count: number }[];
+    topHashtags: { hashtag: string; count: number }[];
+  };
+  generatedAt: Date;
 }

@@ -4,12 +4,11 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { sampleKPIs } from '@/lib/sample-data';
 
 export function KPICards() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-      {sampleKPIs.map((kpi, index) => (
+      {/* Removed: {sampleKPIs.map((kpi, index) => (
         <motion.div
           key={kpi.title}
           initial={{ opacity: 0, y: 20 }}
@@ -54,7 +53,7 @@ export function KPICards() {
             </CardContent>
           </Card>
         </motion.div>
-      ))}
+      ))} */}
     </div>
   );
 }

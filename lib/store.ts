@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Brand, Mention, Product } from './types';
+import { Brand, Mention, Product, SocialListeningCampaign, ScrapedData, GeneratedReport } from './types';
 
 interface AppState {
 
@@ -22,6 +22,15 @@ interface AppState {
   selectedPlatforms: string[];
   sentimentFilter: 'all' | 'positive' | 'neutral' | 'negative';
   
+  // Social Listening State
+  campaigns: SocialListeningCampaign[];
+  scrapedData: ScrapedData[];
+  generatedReports: GeneratedReport[];
+  currentCampaign: SocialListeningCampaign | null;
+  currentCampaignResults: any | null;
+  isScraping: boolean;
+  scrapingProgress: number;
+  
   // Actions
 
   setSidebarCollapsed: (collapsed: boolean) => void;
@@ -39,6 +48,16 @@ interface AppState {
   addProduct: (product: Product) => void;
   updateProduct: (productId: string, updates: Partial<Product>) => void;
   deleteProduct: (productId: string) => void;
+
+  // Social Listening Actions
+  createCampaign: (campaign: Omit<SocialListeningCampaign, 'id' | 'createdAt' | 'updatedAt'>) => void;
+  updateCampaign: (id: string, updates: Partial<SocialListeningCampaign>) => void;
+  deleteCampaign: (id: string) => void;
+  setCurrentCampaign: (campaign: SocialListeningCampaign | null) => void;
+  setCurrentCampaignResults: (results: any | null) => void;
+  addScrapedData: (data: ScrapedData) => void;
+  addGeneratedReport: (report: GeneratedReport) => void;
+  setScrapingStatus: (isScraping: boolean, progress?: number) => void;
 }
 
 export const useAppStore = create<AppState>((set, get) => ({
@@ -47,7 +66,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   sidebarCollapsed: false,
   darkMode: false,
   currentPage: 'dashboard',
-  selectedBrand: null,
+  selectedBrand: 'brand1',
   selectedProduct: null,
 
   brands: [],
@@ -61,6 +80,15 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
   selectedPlatforms: [],
   sentimentFilter: 'all',
+  
+  // Social Listening initial state
+  campaigns: [],
+  scrapedData: [],
+  generatedReports: [],
+  currentCampaign: null,
+  currentCampaignResults: null,
+  isScraping: false,
+  scrapingProgress: 0,
   
   // Actions
 
@@ -94,4 +122,58 @@ export const useAppStore = create<AppState>((set, get) => ({
   deleteProduct: (productId) => set((state) => ({
     products: state.products.filter(product => product.id !== productId)
   })),
+
+  // Social Listening Actions
+  createCampaign: (campaign) => {
+    const newCampaign: SocialListeningCampaign = {
+      ...campaign,
+      id: `campaign_${Date.now()}`,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    set((state) => ({
+      campaigns: [...state.campaigns, newCampaign],
+      currentCampaign: newCampaign,
+    }));
+  },
+
+  updateCampaign: (id, updates) => {
+    set((state) => ({
+      campaigns: state.campaigns.map((campaign) =>
+        campaign.id === id
+          ? { ...campaign, ...updates, updatedAt: new Date() }
+          : campaign
+      ),
+      currentCampaign: state.currentCampaign?.id === id
+        ? { ...state.currentCampaign, ...updates, updatedAt: new Date() }
+        : state.currentCampaign,
+    }));
+  },
+
+  deleteCampaign: (id) => {
+    set((state) => ({
+      campaigns: state.campaigns.filter((campaign) => campaign.id !== id),
+      currentCampaign: state.currentCampaign?.id === id ? null : state.currentCampaign,
+    }));
+  },
+
+  setCurrentCampaign: (campaign) => set({ currentCampaign: campaign }),
+
+  setCurrentCampaignResults: (results) => set({ currentCampaignResults: results }),
+
+  addScrapedData: (data) => {
+    set((state) => ({
+      scrapedData: [...state.scrapedData, data],
+    }));
+  },
+
+  addGeneratedReport: (report) => {
+    set((state) => ({
+      generatedReports: [...state.generatedReports, report],
+    }));
+  },
+
+  setScrapingStatus: (isScraping, progress = 0) => {
+    set({ isScraping, scrapingProgress: progress });
+  },
 }));
