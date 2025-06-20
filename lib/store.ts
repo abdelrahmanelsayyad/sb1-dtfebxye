@@ -1,9 +1,8 @@
 import { create } from 'zustand';
 import { Brand, Mention, Product } from './types';
+import { sampleBrands, sampleMentions, sampleProducts } from './sample-data';
 
 interface AppState {
-
-  
   // UI State
   sidebarCollapsed: boolean;
   darkMode: boolean;
@@ -15,7 +14,6 @@ interface AppState {
   brands: Brand[];
   mentions: Mention[];
   products: Product[];
-
   
   // Filters
   dateRange: { start: Date; end: Date };
@@ -23,7 +21,6 @@ interface AppState {
   sentimentFilter: 'all' | 'positive' | 'neutral' | 'negative';
   
   // Actions
-
   setSidebarCollapsed: (collapsed: boolean) => void;
   setDarkMode: (darkMode: boolean) => void;
   setCurrentPage: (page: string) => void;
@@ -42,28 +39,27 @@ interface AppState {
 }
 
 export const useAppStore = create<AppState>((set, get) => ({
-
-  
+  // Initial UI State
   sidebarCollapsed: false,
   darkMode: false,
   currentPage: 'dashboard',
-  selectedBrand: null,
-  selectedProduct: null,
+  selectedBrand: sampleBrands[0]?.id || null,
+  selectedProduct: sampleProducts[0]?.id || null,
 
-  brands: [],
-  mentions: [],
-  products: [],
-
+  // Initial Data - populated with sample data
+  brands: sampleBrands,
+  mentions: sampleMentions,
+  products: sampleProducts,
   
+  // Initial Filters
   dateRange: {
     start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
     end: new Date()
   },
-  selectedPlatforms: [],
+  selectedPlatforms: ['twitter', 'instagram', 'facebook', 'linkedin'],
   sentimentFilter: 'all',
   
   // Actions
-
   setSidebarCollapsed: (collapsed) => set({ sidebarCollapsed: collapsed }),
   setDarkMode: (darkMode) => set({ darkMode }),
   setCurrentPage: (page) => set({ currentPage: page }),
