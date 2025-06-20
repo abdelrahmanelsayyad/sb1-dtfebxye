@@ -18,7 +18,7 @@ import { Separator } from '@/components/ui/separator';
 
 const navigationItems = [
   { id: 'dashboard', label: 'Dashboard', icon: Home, badge: null, highlight: false },
-  { id: 'reports', label: 'Reports', icon: FileText, badge: null, highlight: true },
+  { id: 'reports', label: 'Reports', icon: FileText, badge: null, highlight: false },
   { id: 'settings', label: 'Settings', icon: Settings, badge: null, highlight: false }
 ];
 
@@ -108,7 +108,7 @@ export function Sidebar() {
               {!sidebarCollapsed && (
                 <>
                   <span className="flex-1 text-left">{item.label}</span>
-                  {item.highlight && (
+                  {item.highlight && false && (
                     <Badge className="ml-2 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
                       New
                     </Badge>
