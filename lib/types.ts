@@ -137,7 +137,7 @@ export interface SocialListeningCampaign {
 export interface ScrapedData {
   id: string;
   campaignId: string;
-  platform: 'twitter' | 'instagram' | 'reddit' | 'facebook';
+  platform: 'twitter' | 'instagram' | 'reddit' | 'facebook' | 'tiktok';
   data: any[];
   scrapedAt: Date;
   status: 'pending' | 'completed' | 'failed';
@@ -146,7 +146,7 @@ export interface ScrapedData {
 
 export interface SocialMention {
   id: string;
-  platform: 'twitter' | 'instagram' | 'reddit' | 'facebook';
+  platform: 'twitter' | 'instagram' | 'reddit' | 'facebook' | 'tiktok';
   content: string;
   author: string;
   timestamp: Date;

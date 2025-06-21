@@ -1,0 +1,22 @@
+{
+  "name": "Comprehensive Test - All Platforms with Custom Limits",
+  "keywords": ["Vodafone Egypt", "فودافون مصر"],
+  "platforms": ["twitter", "instagram", "facebook", "tiktok", "reddit"],
+  "settings": {
+    "twitterResultsLimit": 100,
+    "instagramResultsLimit": 80,
+    "facebookResultsLimit": 120,
+    "tiktokResultsLimit": 60,
+    "redditResultsLimit": 90,
+    "timeRangeMonths": 3,
+    "maxComments": 25
+  },
+  "socialHandles": {
+    "twitter": "VodafoneEgypt",
+    "instagram": "vodafoneegypt",
+    "facebook": "Vodafone.Egypt",
+    "tiktok": "vodafoneegypt"
+  },
+  "mockMode": false,
+  "generateReport": true
+} 

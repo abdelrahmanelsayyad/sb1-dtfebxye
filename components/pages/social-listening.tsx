@@ -114,11 +114,29 @@ export function SocialListening() {
       const result = await response.json();
       console.log('Campaign result:', result);
       
-      // Update campaign status
-      // You would typically update the store here with the results
+      // Save results to localStorage for dashboard access
+      if (result.success && result.data) {
+        localStorage.setItem(`campaign_results_${campaignId}`, JSON.stringify(result.data));
+        
+        // Update the store with current campaign results
+        const { setCurrentCampaignResults } = useAppStore.getState();
+        setCurrentCampaignResults(result.data);
+        
+        // Update campaign status to completed
+        const { updateCampaign } = useAppStore.getState();
+        updateCampaign(campaignId, { 
+          status: 'completed'
+        });
+      }
       
     } catch (error) {
       console.error('Campaign execution error:', error);
+      
+      // Update campaign status to failed
+      const { updateCampaign } = useAppStore.getState();
+      updateCampaign(campaignId, { 
+        status: 'failed'
+      });
     } finally {
       setScrapingStatus(false, 0);
     }

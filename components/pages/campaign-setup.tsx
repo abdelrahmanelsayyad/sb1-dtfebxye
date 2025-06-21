@@ -109,15 +109,22 @@ export function CampaignSetup() {
     // Social Platforms
     selectedPlatforms: ['twitter', 'instagram', 'facebook'],
     socialHandles: {},
+    settings: {
+      twitterResultsLimit: 100,
+      instagramResultsLimit: 100,
+      redditResultsLimit: 100,
+      facebookResultsLimit: 100,
+      tiktokResultsLimit: 100,
+      timeRangeMonths: 1,
+      maxComments: 50
+    },
     
     // Geographic & Language
     targetCountries: ['United States'],
     languages: ['English'],
     
-    
     sentimentTracking: true,
     influencerTracking: true,
-    historicalData: '30days'
   });
 
   const [tempInputs, setTempInputs] = useState<Record<string, string>>({
@@ -133,6 +140,16 @@ export function CampaignSetup() {
 
   const updateFormData = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const updateSettings = (field: string, value: any) => {
+    setFormData(prev => ({
+      ...prev,
+      settings: {
+        ...prev.settings,
+        [field]: value,
+      },
+    }));
   };
 
   const addToArray = (field: string, value: string) => {
@@ -180,12 +197,7 @@ export function CampaignSetup() {
         keywords: [...formData.brandKeywords, ...formData.productKeywords, ...formData.hashtags],
         platforms: formData.selectedPlatforms,
         status: 'running' as const,
-        settings: {
-          resultsCount: 500,
-          timeWindow: 30,
-          maxPosts: 200,
-          maxComments: 50
-        }
+        settings: formData.settings
       };
 
       // Add to store
@@ -203,7 +215,13 @@ export function CampaignSetup() {
           platforms: campaignData.platforms,
           settings: campaignData.settings,
           generateReport: true,
-          socialHandles: formData.socialHandles
+          socialHandles: formData.socialHandles,
+          
+          // Pass full context for LLM
+          industry: formData.industry,
+          brandKeywords: formData.brandKeywords,
+          productKeywords: formData.productKeywords,
+          excludeKeywords: formData.excludeKeywords
         }),
       });
 
@@ -585,31 +603,76 @@ export function CampaignSetup() {
             {/* Social Handles */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <AtSign className="w-5 h-5" />
-                    <span>Your Social Handles</span>
+                <CardTitle className="flex items-center">
+                  <AtSign className="w-6 h-6 mr-2" />
+                  <span>Your Social Handles</span>
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {formData.selectedPlatforms.map((platformId: string) => {
-                    const platform = platforms.find(p => p.id === platformId);
-                    return (
-                      <div key={platformId} className="space-y-2">
-                        <Label htmlFor={platformId}>{platform?.name} Handle</Label>
-                        <Input
-                          id={platformId}
-                          placeholder={`@your${platformId}handle`}
-                          value={formData.socialHandles[platformId] || ''}
-                          onChange={(e) => updateFormData('socialHandles', {
-                            ...formData.socialHandles,
-                            [platformId]: e.target.value
-                          })}
-                        />
+              <CardContent className="space-y-6">
+                {formData.selectedPlatforms.map((platformId: string) => {
+                  const platform = platforms.find(p => p.id === platformId);
+                  if (!platform) return null;
+
+                  const hasTimeRange = platformId === 'twitter' || platformId === 'instagram';
+                  const gridCols = hasTimeRange ? 'md:grid-cols-3' : 'md:grid-cols-2';
+                  
+                  return (
+                    <div key={platformId}>
+                      <div className={`grid grid-cols-1 ${gridCols} gap-4 items-end`}>
+                        <div className="space-y-2 md:col-span-1">
+                          <Label htmlFor={platformId} className="font-semibold">{platform.name} Handle</Label>
+                          <Input
+                            id={platformId}
+                            placeholder={`@your${platformId}handle`}
+                            value={formData.socialHandles[platformId] || ''}
+                            onChange={(e) =>
+                              updateFormData('socialHandles', {
+                                ...formData.socialHandles,
+                                [platformId]: e.target.value,
+                              })
+                            }
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor={`${platformId}-limit`}>Results (1-200)</Label>
+                          <Input
+                            id={`${platformId}-limit`}
+                            type="number"
+                            min="1"
+                            max="200"
+                            value={formData.settings[`${platformId}ResultsLimit`] || 100}
+                            onChange={(e) => {
+                              const value = Math.max(1, Math.min(200, parseInt(e.target.value) || 100));
+                              updateSettings(`${platformId}ResultsLimit`, value);
+                            }}
+                            className="w-full"
+                          />
+                        </div>
+
+                        {hasTimeRange && (
+                          <div className="space-y-2">
+                            <Label htmlFor={`${platformId}-time`}>Time Range</Label>
+                            <Select
+                              value={String(formData.settings.timeRangeMonths || 1)}
+                              onValueChange={(value) => updateSettings('timeRangeMonths', parseInt(value))}
+                            >
+                              <SelectTrigger id={`${platformId}-time`}>
+                                <SelectValue placeholder="Select time range" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="1">Last month</SelectItem>
+                                <SelectItem value="2">Last 2 months</SelectItem>
+                                <SelectItem value="3">Last 3 months</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        )}
                       </div>
-                    );
-                  })}
-                </div>
+                      {formData.selectedPlatforms.length > 1 && <Separator className="mt-6"/>}
+                    </div>
+                  );
+                })}
               </CardContent>
             </Card>
           </div>

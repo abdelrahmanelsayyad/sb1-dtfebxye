@@ -1,0 +1,14 @@
+{
+  "name": "Facebook Comments Test",
+  "keywords": ["Vodafone"],
+  "platforms": ["facebook"],
+  "settings": {
+    "maxPosts": 20,
+    "resultsCount": 20
+  },
+  "socialHandles": {
+    "facebook": "Vodafone.Egypt"
+  },
+  "mockMode": false,
+  "generateReport": true
+} 

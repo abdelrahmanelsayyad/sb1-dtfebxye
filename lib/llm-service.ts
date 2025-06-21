@@ -1,4 +1,6 @@
-const OPENROUTER_API_KEY = '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';
+import { CONFIG } from './config';
+
+const OPENROUTER_API_KEY = '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';
 
 export interface LLMConfig {
   model?: string;
@@ -16,6 +18,21 @@ export interface SocialListeningData {
   keywords: string[];
 }
 
+export interface CampaignContext {
+  brandName?: string;
+  industry?: string;
+  brandKeywords?: string[];
+  productKeywords?: string[];
+  excludeKeywords?: string[];
+}
+
+// Helper function to create a timeout promise
+function createLLMTimeoutPromise(timeoutMs: number): Promise<never> {
+  return new Promise((_, reject) => {
+    setTimeout(() => reject(new Error(`LLM request timeout after ${timeoutMs}ms`)), timeoutMs);
+  });
+}
+
 export class LLMService {
   static async generateReport(data: SocialListeningData, reportType: string, config: LLMConfig = {}) {
     const prompt = this.buildPrompt(data, reportType);
@@ -23,30 +40,33 @@ export class LLMService {
     try {
       console.log(`Generating ${reportType} report with Google Gemini 2.5 Flash...`);
       
-      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
-          'Content-Type': 'application/json',
-          'HTTP-Referer': 'https://sociallisten.app',
-          'X-Title': 'SocialListen',
-        },
-        body: JSON.stringify({
-          model: 'google/gemini-2.5-flash',
-          messages: [
-            {
-              role: 'system',
-              content: 'You are a social media listening expert. Analyze social media data and provide insightful, actionable reports. Be concise, professional, and data-driven.'
-            },
-            {
-              role: 'user',
-              content: prompt
-            }
-          ],
-          max_tokens: config.maxTokens || 2000,
-          temperature: config.temperature || 0.7,
+      const response = await Promise.race([
+        fetch('https://openrouter.ai/api/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+            'Content-Type': 'application/json',
+            'HTTP-Referer': 'https://sociallisten.app',
+            'X-Title': 'SocialListen',
+          },
+          body: JSON.stringify({
+            model: 'google/gemini-2.5-flash',
+            messages: [
+              {
+                role: 'system',
+                content: 'You are a social media listening expert. Analyze social media data and provide insightful, actionable reports. Be concise, professional, and data-driven.'
+              },
+              {
+                role: 'user',
+                content: prompt
+              }
+            ],
+            max_tokens: config.maxTokens || CONFIG.LLM_MAX_TOKENS,
+            temperature: config.temperature || CONFIG.LLM_TEMPERATURE,
+          }),
         }),
-      });
+        createLLMTimeoutPromise(CONFIG.LLM_TIMEOUT)
+      ]);
 
       if (!response.ok) {
         throw new Error(`LLM API error: ${response.status} ${response.statusText}`);
@@ -68,6 +88,9 @@ export class LLMService {
   }
 
   private static buildPrompt(data: SocialListeningData, reportType: string): string {
+    // Filter and prepare sample mentions for better analysis
+    const sampleMentions = this.selectDiverseSampleMentions(data.mentions);
+
     const baseContext = `
 Social Media Listening Data Analysis:
 
@@ -86,8 +109,19 @@ Sentiment Distribution:
 Top Hashtags:
 ${data.hashtags.slice(0, 10).map(h => `- #${h.hashtag}: ${h.count} mentions`).join('\n')}
 
-Sample Mentions (first 5):
-${data.mentions.slice(0, 5).map(m => `- ${m.platform || 'unknown'}: "${(m.content || m.text || 'No content').substring(0, 100)}..." by ${m.author || m.user || 'Unknown'}`).join('\n')}
+Sample Mentions (${sampleMentions.length} diverse examples):
+${sampleMentions.map(m => {
+  const content = m.content || m.text || 'No content';
+  const sentiment = m.sentiment || 'unknown';
+  const sentimentScore = m.sentimentScore || 'N/A';
+  const author = m.author || m.user || 'Unknown';
+  const platform = m.platform || 'unknown';
+  
+  // Show more content but still truncate very long ones
+  const displayContent = content.length > 200 ? content.substring(0, 200) + '...' : content;
+  
+  return `- ${platform} (${sentiment}, score: ${sentimentScore}): "${displayContent}" by ${author}`;
+}).join('\n')}
 `;
 
     switch (reportType) {
@@ -149,6 +183,35 @@ Please provide a general analysis of this social media data.`;
     }
   }
 
+  private static selectDiverseSampleMentions(mentions: any[]): any[] {
+    // Filter out very long official responses and empty content
+    const filteredMentions = mentions.filter(m => {
+      const content = m.content || m.text || '';
+      return content.length < 500 && content.length > 10;
+    });
+
+    if (filteredMentions.length === 0) {
+      return mentions.slice(0, 5); // Fallback to original mentions
+    }
+
+    // Try to get a diverse sample with different sentiments
+    const positive = filteredMentions.filter(m => m.sentiment === 'positive').slice(0, 2);
+    const negative = filteredMentions.filter(m => m.sentiment === 'negative').slice(0, 2);
+    const neutral = filteredMentions.filter(m => m.sentiment === 'neutral').slice(0, 2);
+    const unknown = filteredMentions.filter(m => !m.sentiment || m.sentiment === 'unknown').slice(0, 2);
+
+    // Combine and limit to 8 total
+    const diverseSample = [...positive, ...negative, ...neutral, ...unknown].slice(0, 8);
+    
+    // If we don't have enough diverse samples, fill with remaining mentions
+    if (diverseSample.length < 8) {
+      const remaining = filteredMentions.filter(m => !diverseSample.includes(m)).slice(0, 8 - diverseSample.length);
+      diverseSample.push(...remaining);
+    }
+
+    return diverseSample;
+  }
+
   private static parseLLMResponse(response: any, reportType: string) {
     const content = response.choices?.[0]?.message?.content || '';
     
@@ -206,6 +269,91 @@ Please provide a general analysis of this social media data.`;
     }
     
     return reports;
+  }
+
+  private static normalizeMention(mention: any): { id: string; content: string; author: string, platform: string } {
+    const platform = mention.platform || mention.targetPlatform || 'unknown';
+    
+    switch (platform) {
+      case 'facebook':
+      case 'tiktok':
+        const postDesc = mention.postDescription || '';
+        const commentText = mention.commentText || '';
+        
+        // Create more readable content format
+        let content = '';
+        if (postDesc && commentText) {
+          content = `Post: ${postDesc}\n\nComment: ${commentText}`;
+        } else if (commentText) {
+          content = commentText;
+        } else if (postDesc) {
+          content = postDesc;
+        } else {
+          content = 'No content available';
+        }
+        
+        const author = mention.commentAuthor || 'Unknown';
+        const id = mention.postUrl || mention.commentTimestamp || String(Date.now());
+        
+        return {
+          id: id,
+          content: content,
+          author: author,
+          platform: platform
+        };
+      case 'instagram':
+        const postCaption = mention.postCaption || '';
+        const instagramCommentText = mention.commentText || '';
+        
+        // Create more readable content format for Instagram
+        let instagramContent = '';
+        if (postCaption && instagramCommentText) {
+          instagramContent = `Post: ${postCaption}\n\nComment: ${instagramCommentText}`;
+        } else if (instagramCommentText) {
+          instagramContent = instagramCommentText;
+        } else if (postCaption) {
+          instagramContent = postCaption;
+        } else {
+          instagramContent = 'No content available';
+        }
+        
+        const instagramAuthor = mention.commentAuthor || mention.ownerUsername || 'Unknown';
+        const instagramId = mention.postUrl || mention.commentId || String(Date.now());
+        
+        return {
+          id: instagramId,
+          content: instagramContent,
+          author: instagramAuthor,
+          platform: platform
+        };
+      case 'twitter':
+        const twitterContent = mention.content || mention.text || mention.postText || 'No content available';
+        return {
+          id: mention.id || mention.url || mention.postUrl || String(Date.now()),
+          content: twitterContent,
+          author: mention.author || mention.user || 'Unknown',
+          platform: platform
+        };
+      case 'reddit':
+         const redditContent = mention.content || mention.text || mention.body || 'No content available';
+         const redditTitle = mention.title || mention.postTitle || '';
+         const fullRedditContent = redditTitle ? `Post: ${redditTitle}\n\n${redditContent}` : redditContent;
+         
+         return {
+          id: mention.id || mention.url || mention.permalink || String(Date.now()),
+          content: fullRedditContent,
+          author: mention.author || mention.user || 'Unknown',
+          platform: platform
+        };
+      default:
+        const defaultContent = mention.content || mention.text || mention.postText || 'No content available';
+        return {
+          id: mention.id || mention.url || String(Date.now()),
+          content: defaultContent,
+          author: mention.author || mention.user || 'Unknown',
+          platform: platform
+        };
+    }
   }
 
   private static buildFallbackContent(data: SocialListeningData, type: string): string {
@@ -292,54 +440,79 @@ This is a fallback report generated due to LLM service issues. Basic campaign da
     }
   }
 
-  static async enhanceMentions(mentions: any[]) {
-    // Batch process mentions for LLM token limits - reduced batch size to prevent JSON issues
-    const batchSize = 5; // Reduced from 20 to 5
-    const batches = [];
+  // Enhance mentions with sentiment, key topics, etc.
+  static async enhanceMentions(mentions: any[], context: CampaignContext) {
+    if (!mentions || mentions.length === 0) {
+      return [];
+    }
+    
+    const batchSize = 20;
+    const enhancedMentions = [];
+
     for (let i = 0; i < mentions.length; i += batchSize) {
-      batches.push(mentions.slice(i, i + batchSize));
+      const batch = mentions.slice(i, i + batchSize);
+      const processedBatch = await this.processMentionBatch(batch, context);
+      enhancedMentions.push(...processedBatch);
     }
-    const enhanced: any[] = [];
-    for (const batch of batches) {
-      try {
-        const enhancedBatch = await this.processMentionBatch(batch);
-        enhanced.push(...enhancedBatch);
-      } catch (error) {
-        console.error('Error processing mention batch:', error);
-        // Fallback: return original mentions if enhancement fails
-        enhanced.push(...batch);
-      }
-    }
-    return enhanced;
+    
+    return enhancedMentions;
   }
 
-  private static async processMentionBatch(mentions: any[]) {
+  private static async processMentionBatch(mentions: any[], context: CampaignContext) {
+    const normalizedMentions = mentions.map(this.normalizeMention);
+    
+    const prompt = `
+You are a social media analysis expert for the brand '${context.brandName || 'the user'}' in the '${context.industry || 'general'}' industry.
+
+Your task is to analyze the following social media mentions. These mentions were collected based on the following criteria:
+- Brand Keywords: [${(context.brandKeywords || []).join(', ')}]
+- Product Keywords: [${(context.productKeywords || []).join(', ')}]
+- Excluded Keywords: [${(context.excludeKeywords || []).join(', ')}]
+
+For each mention, provide a JSON object with:
+- "id": The original ID of the mention.
+- "sentiment": "positive", "negative", or "neutral".
+- "sentimentScore": A score from 0.0 (very negative) to 1.0 (very positive).
+- "keyTopics": An array of 1-3 main topics discussed (e.g., ["customer service", "pricing"]).
+- "engagementQuality": "high", "medium", or "low" based on potential impact.
+- "insights": A brief, one-sentence insight or summary.
+
+Critically evaluate the sentiment of each comment within the context of the post. Do not default to 'neutral' for short comments if a subtle positive or negative tone can be inferred.
+
+Mentions:
+${JSON.stringify(normalizedMentions, null, 2)}
+
+Respond ONLY with a valid JSON array of objects, one for each mention. Do not include any other text or formatting.
+`;
+
     try {
-      // Call LLM API to enhance mentions
-      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
-          'Content-Type': 'application/json',
-          'HTTP-Referer': 'https://sociallisten.app',
-          'X-Title': 'SocialListen',
-        },
-        body: JSON.stringify({
-          model: 'google/gemini-2.5-flash',
-          messages: [
-            {
-              role: 'system',
-              content: 'You are a social media analysis expert. Analyze the provided mentions and return a VALID JSON array with enhanced data. Each object must include: sentiment (positive/negative/neutral), sentimentScore (0-1), keyTopics (array of 3-5 topics), engagementQuality (low/medium/high), and insights (brief analysis). Return ONLY valid JSON without any markdown formatting, code blocks, or additional text. Ensure all JSON is properly closed with brackets and braces.'
-            },
-            {
-              role: 'user',
-              content: `Analyze these social media mentions and return a VALID JSON array with enhanced data. Return ONLY the JSON array, no other text:\n\n${JSON.stringify(mentions, null, 2)}`
-            }
-          ],
-          max_tokens: 6000,
-          temperature: 0.5,
+      const response = await Promise.race([
+        fetch('https://openrouter.ai/api/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+            'Content-Type': 'application/json',
+            'HTTP-Referer': 'https://sociallisten.app',
+            'X-Title': 'SocialListen',
+          },
+          body: JSON.stringify({
+            model: 'google/gemini-2.5-flash',
+            messages: [
+              {
+                role: 'system',
+                content: 'You are a social media analysis expert. Analyze the provided mentions and return a VALID JSON array with enhanced data. Each object must include: sentiment (positive/negative/neutral), sentimentScore (0-1), keyTopics (array of 3-5 topics), engagementQuality (low/medium/high), and insights (brief analysis). Return ONLY valid JSON without any markdown formatting, code blocks, or additional text. Ensure all JSON is properly closed with brackets and braces.'
+              },
+              {
+                role: 'user',
+                content: prompt
+              }
+            ],
+            max_tokens: 6000,
+            temperature: 0.5,
+          }),
         }),
-      });
+        createLLMTimeoutPromise(CONFIG.LLM_TIMEOUT)
+      ]);
 
       if (!response.ok) {
         throw new Error(`LLM API error: ${response.status} ${response.statusText}`);
@@ -353,65 +526,108 @@ This is a fallback report generated due to LLM service issues. Basic campaign da
       }
 
       // Clean the response to remove markdown formatting
-      const cleanedResponse = this.cleanLLMJsonResponse(content);
-      
-      console.log('Raw response length:', content.length);
-      console.log('Cleaned response length:', cleanedResponse.length);
+      let cleanedResponse = this.cleanLLMJsonResponse(content);
       
       // Try to parse the cleaned JSON
       try {
-        const enhancedMentions = JSON.parse(cleanedResponse);
-        console.log('Successfully parsed JSON, enhanced mentions:', enhancedMentions.length);
+        // First, try to fix any common JSON issues before parsing
+        const fixedJson = this.fixCommonJsonIssues(cleanedResponse);
+        const enhancedData = JSON.parse(fixedJson);
+        
+        // Merge enhanced data with original mentions, preserving all original data
+        const enhancedMentions = mentions.map((originalMention, index) => {
+          const enhanced = enhancedData[index] || {};
+          const normalized = this.normalizeMention(originalMention);
+          
+          return {
+            ...originalMention, // Preserve ALL original data
+            // Add enhanced fields
+            sentiment: enhanced.sentiment || null,
+            sentimentScore: enhanced.sentimentScore || null,
+            keyTopics: enhanced.keyTopics || [],
+            engagementQuality: enhanced.engagementQuality || 'low',
+            insights: enhanced.insights || '',
+            // Ensure content and author are properly set for reports
+            content: normalized.content,
+            author: normalized.author,
+            platform: normalized.platform
+          };
+        });
+        
         return enhancedMentions;
       } catch (parseError) {
-        console.error('Error parsing LLM JSON:', parseError);
-        console.error('Raw response (first 500 chars):', content.substring(0, 500));
-        console.error('Cleaned response (first 500 chars):', cleanedResponse.substring(0, 500));
+        console.error('Error parsing LLM JSON even after fixing attempts:', parseError);
         
-        // Try to extract JSON from the response using regex
+        // Final attempt: try to extract JSON from the response using regex
         const jsonMatch = content.match(/\[[\s\S]*\]/);
         if (jsonMatch) {
           try {
             const extractedJson = JSON.parse(jsonMatch[0]);
-            console.log('Successfully extracted JSON using regex, enhanced mentions:', extractedJson.length);
-            return extractedJson;
+            
+            // Merge extracted data with original mentions
+            const enhancedMentions = mentions.map((originalMention, index) => {
+              const enhanced = extractedJson[index] || {};
+              const normalized = this.normalizeMention(originalMention);
+              
+              return {
+                ...originalMention, // Preserve ALL original data
+                // Add enhanced fields
+                sentiment: enhanced.sentiment || null,
+                sentimentScore: enhanced.sentimentScore || null,
+                keyTopics: enhanced.keyTopics || [],
+                engagementQuality: enhanced.engagementQuality || 'low',
+                insights: enhanced.insights || '',
+                // Ensure content and author are properly set for reports
+                content: normalized.content,
+                author: normalized.author,
+                platform: normalized.platform
+              };
+            });
+            
+            return enhancedMentions;
           } catch (extractError) {
-            console.error('Failed to parse extracted JSON:', extractError);
+            console.error('Failed to parse extracted JSON with regex:', extractError);
           }
         }
         
-        // Try to fix common JSON issues
-        try {
-          const fixedJson = this.fixCommonJsonIssues(cleanedResponse);
-          const enhancedMentions = JSON.parse(fixedJson);
-          console.log('Successfully parsed fixed JSON, enhanced mentions:', enhancedMentions.length);
-          return enhancedMentions;
-        } catch (fixError) {
-          console.error('Failed to parse fixed JSON:', fixError);
-        }
-        
-        // Fallback: return original mentions with basic enhancement
-        console.log('Using fallback enhancement for', mentions.length, 'mentions');
-        return mentions.map(mention => ({
-          ...mention,
-          sentiment: 'neutral',
-          sentimentScore: 0.5,
-          keyTopics: ['general'],
-          engagementQuality: 'low',
-          insights: 'Unable to analyze due to parsing error'
-        }));
+        // Fallback: return original mentions with error details
+        console.log('Using fallback enhancement for', mentions.length, 'mentions due to parsing failure.');
+        return mentions.map(mention => {
+          const normalized = this.normalizeMention(mention);
+          return {
+            ...mention, // Preserve ALL original data
+            sentiment: null,
+            sentimentScore: null,
+            keyTopics: [],
+            engagementQuality: 'low',
+            insights: 'Failed to parse LLM analysis response.',
+            error: true,
+            // Ensure content and author are properly set for reports
+            content: normalized.content,
+            author: normalized.author,
+            platform: normalized.platform
+          };
+        });
       }
     } catch (error) {
       console.error('Error processing mention batch:', error);
-      // Fallback: return original mentions with basic enhancement
-      return mentions.map(mention => ({
-        ...mention,
-        sentiment: 'neutral',
-        sentimentScore: 0.5,
-        keyTopics: ['general'],
-        engagementQuality: 'low',
-        insights: 'Unable to analyze due to API error'
-      }));
+      // Fallback: return original mentions with error details
+      return mentions.map(mention => {
+        const normalized = this.normalizeMention(mention);
+        return {
+          ...mention, // Preserve ALL original data
+          sentiment: null,
+          sentimentScore: null,
+          keyTopics: [],
+          engagementQuality: 'low',
+          insights: `LLM API request failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          error: true,
+          // Ensure content and author are properly set for reports
+          content: normalized.content,
+          author: normalized.author,
+          platform: normalized.platform
+        };
+      });
     }
   }
 

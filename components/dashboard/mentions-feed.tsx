@@ -73,9 +73,10 @@ export function MentionsFeed() {
     }
   };
 
-  const formatDate = (date: Date) => {
+  const formatDate = (date: Date | string | number) => {
+    const dateObj = typeof date === 'string' || typeof date === 'number' ? new Date(date) : date;
     const now = new Date();
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+    const diffInHours = Math.floor((now.getTime() - dateObj.getTime()) / (1000 * 60 * 60));
     
     if (diffInHours < 1) {
       return 'Just now';
@@ -148,13 +149,17 @@ export function MentionsFeed() {
               <div className="flex items-start space-x-3">
                 <Avatar className="w-10 h-10">
                   <AvatarFallback className="text-sm">
-                    {mention.author.substring(0, 2).toUpperCase()}
+                    {typeof mention.author === 'string' 
+                      ? mention.author.substring(0, 2).toUpperCase() 
+                      : 'NA'}
                   </AvatarFallback>
                 </Avatar>
                 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center space-x-2 mb-2">
-                    <span className="font-medium text-sm">{mention.author}</span>
+                    <span className="font-medium text-sm">
+                      {typeof mention.author === 'string' ? mention.author : 'Unknown Author'}
+                    </span>
                     <Badge 
                       variant="outline" 
                       className={`text-xs ${getPlatformColor(mention.platform)}`}

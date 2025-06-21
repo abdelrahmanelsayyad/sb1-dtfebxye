@@ -1,0 +1,14 @@
+{
+  "name": "TikTok Comments Test",
+  "keywords": ["Vodafone"],
+  "platforms": ["tiktok"],
+  "settings": {
+    "maxPosts": 20,
+    "resultsCount": 20
+  },
+  "socialHandles": {
+    "tiktok": "vodafoneegypt"
+  },
+  "mockMode": false,
+  "generateReport": true
+} 
