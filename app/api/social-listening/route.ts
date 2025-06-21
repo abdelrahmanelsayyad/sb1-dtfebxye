@@ -103,24 +103,26 @@ async function processSocialListeningRequest(request: NextRequest) {
 
     // Twitter/X scraping
     if (platforms.includes('twitter')) {
-      const query = keywords[0] || '';
-      if (query.trim()) {
+      // Check for Twitter URLs in social handles or use keywords as URLs
+      const twitterUrls = socialHandles?.twitter ? [socialHandles.twitter] : 
+                         keywords.map((keyword: string) => `https://twitter.com/search?q=${encodeURIComponent(keyword)}`);
+      
+      if (twitterUrls.length > 0) {
         platformPromises.push(
           scrapePlatform('twitter', async () => {
-            const truncatedQuery = query.substring(0, 30);
-            console.log(`Twitter query: "${query}" -> truncated to "${truncatedQuery}" (${truncatedQuery.length} chars)`);
+            console.log(`Twitter URLs: ${twitterUrls.join(', ')}`);
             
-            return await ApifyService.scrapeTwitterPosts({
-              keywords: [truncatedQuery],
+            return await ApifyService.scrapeTwitterWithReplies({
+              twitterUrls,
               twitterResultsLimit: settings.twitterResultsLimit || settings.resultsCount || 200,
               timeRangeMonths: settings.timeRangeMonths,
-              timeWindow: settings.timeWindow || 30,
+              maxComments: settings.maxComments || 50,
               socialHandles
             });
           })
         );
       } else {
-        console.log('Skipping Twitter scraping - no valid query provided');
+        console.log('Skipping Twitter scraping - no Twitter URLs or handles provided');
       }
     }
 
@@ -331,45 +333,58 @@ function processMentionsData(mentions: any[], keywords: string[]) {
     let content = mention.content || '';
     let author = mention.author || '';
     
-    // Only format content if it's missing or empty
-    if (!content || content === 'No content available') {
-      // Handle different platform data structures
-      if (mention.platform === 'facebook' || mention.platform === 'tiktok') {
-        const postDesc = mention.postDescription || '';
-        const commentText = mention.commentText || '';
+    // Handle Twitter-specific data structure (tweets + replies)
+    if (mention.platform === 'twitter') {
+      // Handle both original tweets and replies
+      if (mention.isReply) {
+        // This is a reply - use reply-specific content
+        content = mention.full_text || mention.text || mention.content || 'No reply content';
+        author = mention.author?.userName || mention.user?.screen_name || mention.author || 'Unknown';
         
-        // Create more readable content format
-        if (postDesc && commentText) {
-          content = `Post: ${postDesc}\n\nComment: ${commentText}`;
-        } else if (commentText) {
-          content = commentText;
-        } else if (postDesc) {
-          content = postDesc;
-        } else {
-          content = 'No content available';
+        // Add context about the parent tweet if available
+        if (mention.inReplyToId || mention.parentTweetId) {
+          content = `Reply to tweet ${mention.inReplyToId || mention.parentTweetId}:\n${content}`;
         }
-        
-        author = mention.commentAuthor || 'Unknown';
-      } else if (mention.platform === 'instagram') {
-        const postCaption = mention.postCaption || '';
-        const commentText = mention.commentText || '';
-        
-        // Create more readable content format for Instagram
-        if (postCaption && commentText) {
-          content = `Post: ${postCaption}\n\nComment: ${commentText}`;
-        } else if (commentText) {
-          content = commentText;
-        } else if (postCaption) {
-          content = postCaption;
-        } else {
-          content = 'No content available';
-        }
-        
-        author = mention.commentAuthor || mention.ownerUsername || 'Unknown';
       } else {
-        content = mention.content || mention.text || mention.postText || '';
-        author = mention.author || mention.user || 'Unknown';
+        // This is an original tweet
+        content = mention.full_text || mention.text || mention.content || 'No tweet content';
+        author = mention.author?.userName || mention.user?.screen_name || mention.author || 'Unknown';
       }
+    } else if (mention.platform === 'facebook' || mention.platform === 'tiktok') {
+      const postDesc = mention.postDescription || '';
+      const commentText = mention.commentText || '';
+      
+      // Create more readable content format
+      if (postDesc && commentText) {
+        content = `Post: ${postDesc}\n\nComment: ${commentText}`;
+      } else if (commentText) {
+        content = commentText;
+      } else if (postDesc) {
+        content = postDesc;
+      } else {
+        content = 'No content available';
+      }
+      
+      author = mention.commentAuthor || 'Unknown';
+    } else if (mention.platform === 'instagram') {
+      const postCaption = mention.postCaption || '';
+      const commentText = mention.commentText || '';
+      
+      // Create more readable content format for Instagram
+      if (postCaption && commentText) {
+        content = `Post: ${postCaption}\n\nComment: ${commentText}`;
+      } else if (commentText) {
+        content = commentText;
+      } else if (postCaption) {
+        content = postCaption;
+      } else {
+        content = 'No content available';
+      }
+      
+      author = mention.commentAuthor || mention.ownerUsername || 'Unknown';
+    } else {
+      content = mention.content || mention.text || mention.postText || '';
+      author = mention.author || mention.user || 'Unknown';
     }
     
     // Ensure author is set
@@ -377,18 +392,94 @@ function processMentionsData(mentions: any[], keywords: string[]) {
       author = mention.author || mention.user || mention.commentAuthor || mention.ownerUsername || 'Unknown';
     }
     
+    // Create a unique ID for each mention
+    const mentionId = mention.id_str || mention.id || mention.conversation_id_str || mention.conversationId || `mention_${Date.now()}_${Math.random()}`;
+    
     return {
       ...mention,
+      id: mentionId,
       content: content,
       author: author,
       // Ensure sentiment is available for reports
       sentiment: mention.sentiment || 'neutral',
-      sentimentScore: mention.sentimentScore || 0.5
+      sentimentScore: mention.sentimentScore || 0.5,
+      // Add Twitter-specific fields for better tracking
+      conversationId: mention.conversation_id_str || mention.conversationId || mention.id_str || mention.id,
+      isReply: mention.isReply || (mention.inReplyToId && mention.inReplyToId !== mention.id),
+      parentTweetId: mention.inReplyToId || mention.parentTweetId,
+      replyChain: mention.reply_chain || mention.replyChain || [],
+      // Enhanced user info for Twitter
+      userInfo: mention.userInfo || {
+        username: mention.author?.userName || mention.user?.screen_name || mention.username || '',
+        displayName: mention.author?.name || mention.user?.name || mention.display_name || '',
+        verified: mention.author?.isVerified || mention.user?.verified || false,
+        followersCount: mention.author?.followers || mention.user?.followers_count || 0,
+        followingCount: mention.author?.following || mention.user?.friends_count || 0
+      }
     };
   });
 
+  // Group Twitter mentions by conversation for better analysis
+  const twitterConversations = new Map();
+  const otherMentions: any[] = [];
+  
+  formattedMentions.forEach(mention => {
+    if (mention.platform === 'twitter' && mention.conversationId) {
+      if (!twitterConversations.has(mention.conversationId)) {
+        twitterConversations.set(mention.conversationId, {
+          conversationId: mention.conversationId,
+          originalTweet: null,
+          replies: [],
+          totalEngagement: 0
+        });
+      }
+      
+      const conversation = twitterConversations.get(mention.conversationId);
+      
+      if (mention.isReply) {
+        conversation.replies.push(mention);
+      } else {
+        conversation.originalTweet = mention;
+      }
+      
+      // Sum up engagement for the conversation
+      const engagement = mention.engagement || {};
+      conversation.totalEngagement += (engagement.likes || 0) + (engagement.retweets || 0) + (engagement.replies || 0);
+    } else {
+      otherMentions.push(mention);
+    }
+  });
+  
+  // Flatten conversations back to mentions array, but with conversation context
+  const finalMentions = [...otherMentions];
+  
+  twitterConversations.forEach(conversation => {
+    // Add original tweet first
+    if (conversation.originalTweet) {
+      finalMentions.push({
+        ...conversation.originalTweet,
+        conversationContext: {
+          totalReplies: conversation.replies.length,
+          totalEngagement: conversation.totalEngagement
+        }
+      });
+    }
+    
+    // Add replies with parent context
+    conversation.replies.forEach((reply: any) => {
+      finalMentions.push({
+        ...reply,
+        conversationContext: {
+          parentTweet: conversation.originalTweet,
+          totalReplies: conversation.replies.length,
+          totalEngagement: conversation.totalEngagement
+        }
+      });
+    });
+  });
+
   // Calculate platform distribution
-  const platformCounts = formattedMentions.reduce((acc, mention) => {
+  const platformCounts = finalMentions.reduce((acc, mention) => {
     const platform = mention.platform || 'unknown';
     acc[platform] = (acc[platform] || 0) + 1;
     return acc;
@@ -400,7 +491,7 @@ function processMentionsData(mentions: any[], keywords: string[]) {
   }));
 
   // Calculate sentiment distribution
-  const sentimentCounts = formattedMentions.reduce((acc, mention) => {
+  const sentimentCounts = finalMentions.reduce((acc, mention) => {
     // Treat null or undefined sentiment (due to error) as neutral for summary,
     // but the individual mention will still show the error.
     const sentiment = mention.sentiment || 'neutral'; 
@@ -409,7 +500,7 @@ function processMentionsData(mentions: any[], keywords: string[]) {
   }, { positive: 0, negative: 0, neutral: 0 });
 
   // Extract hashtags
-  const hashtagCounts = formattedMentions.reduce((acc, mention) => {
+  const hashtagCounts = finalMentions.reduce((acc, mention) => {
     const hashtags = mention.hashtags || [];
     hashtags.forEach((hashtag: string) => {
       acc[hashtag] = (acc[hashtag] || 0) + 1;
@@ -422,14 +513,32 @@ function processMentionsData(mentions: any[], keywords: string[]) {
     .sort((a, b) => b.count - a.count)
     .slice(0, 20);
 
+  // Add Twitter conversation analytics
+  const twitterAnalytics = {
+    totalConversations: twitterConversations.size,
+    totalReplies: Array.from(twitterConversations.values()).reduce((sum, conv) => sum + conv.replies.length, 0),
+    averageRepliesPerConversation: twitterConversations.size > 0 ? 
+      Array.from(twitterConversations.values()).reduce((sum, conv) => sum + conv.replies.length, 0) / twitterConversations.size : 0,
+    topConversations: Array.from(twitterConversations.values())
+      .sort((a, b) => b.totalEngagement - a.totalEngagement)
+      .slice(0, 5)
+      .map(conv => ({
+        conversationId: conv.conversationId,
+        totalEngagement: conv.totalEngagement,
+        replyCount: conv.replies.length,
+        originalTweet: conv.originalTweet?.content?.substring(0, 100) || 'No content'
+      }))
+  };
+
   return {
-    mentions: formattedMentions,
-    totalMentions: formattedMentions.length,
+    mentions: finalMentions,
+    totalMentions: finalMentions.length,
     platforms,
     sentiment: sentimentCounts,
     hashtags,
     timeRange: 'Last 30 days', // This should be configurable
-    keywords
+    keywords,
+    twitterAnalytics // New field for Twitter-specific insights
   };
 }
 

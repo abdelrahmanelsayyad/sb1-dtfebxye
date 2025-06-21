@@ -4,6 +4,7 @@ import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { KPICards } from '@/components/dashboard/kpi-cards';
 import { MentionsFeed } from '@/components/dashboard/mentions-feed';
+import { TwitterConversations } from '@/components/dashboard/twitter-conversations';
 import { MentionVolumeChart } from '@/components/dashboard/charts/mention-volume-chart';
 import { PlatformDistribution } from '@/components/dashboard/charts/platform-distribution';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
@@ -11,7 +12,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAppStore } from '@/lib/store';
 import { Plus, TrendingUp, MessageCircle } from 'lucide-react';
-import Link from 'next/link';
 
 export function Dashboard() {
   const { 
@@ -19,7 +19,8 @@ export function Dashboard() {
     currentCampaign, 
     currentCampaignResults, 
     setCurrentCampaign,
-    setCurrentCampaignResults 
+    setCurrentCampaignResults,
+    setCurrentPage
   } = useAppStore();
 
   // Load the most recent campaign results if available
@@ -46,6 +47,10 @@ export function Dashboard() {
         console.error('Error parsing saved campaign results:', error);
       }
     }
+  };
+
+  const handleCreateCampaign = () => {
+    setCurrentPage('setup');
   };
 
   return (
@@ -91,12 +96,10 @@ export function Dashboard() {
           )}
         </div>
         
-        <Link href="/social-listening">
-          <Button className="flex items-center space-x-2">
-            <Plus className="w-4 h-4" />
-            <span>New Campaign</span>
-          </Button>
-        </Link>
+        <Button className="flex items-center space-x-2" onClick={handleCreateCampaign}>
+          <Plus className="w-4 h-4" />
+          <span>New Campaign</span>
+        </Button>
       </div>
 
       {/* No Campaign State */}
@@ -114,12 +117,10 @@ export function Dashboard() {
                 <p className="text-gray-600 dark:text-gray-400 mb-4">
                   Create your first social listening campaign to start monitoring mentions
                 </p>
-                <Link href="/social-listening">
-                  <Button className="flex items-center space-x-2">
-                    <Plus className="w-4 h-4" />
-                    <span>Create Campaign</span>
-                  </Button>
-                </Link>
+                <Button className="flex items-center space-x-2" onClick={handleCreateCampaign}>
+                  <Plus className="w-4 h-4" />
+                  <span>Create Campaign</span>
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -145,11 +146,9 @@ export function Dashboard() {
                   }
                 </p>
                 {currentCampaign && (
-                  <Link href="/social-listening">
-                    <Button variant="outline">
-                      Run Campaign
-                    </Button>
-                  </Link>
+                  <Button variant="outline" onClick={handleCreateCampaign}>
+                    Run Campaign
+                  </Button>
                 )}
               </div>
             </CardContent>
@@ -177,6 +176,9 @@ export function Dashboard() {
           </div>
         </div>
       </div>
+
+      {/* Twitter Conversations Analytics */}
+      <TwitterConversations />
     </div>
   );
 }

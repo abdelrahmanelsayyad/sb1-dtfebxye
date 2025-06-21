@@ -16,6 +16,18 @@ export interface SocialListeningData {
   hashtags: { hashtag: string; count: number }[];
   timeRange: string;
   keywords: string[];
+  // New field for Twitter conversation analytics
+  twitterAnalytics?: {
+    totalConversations: number;
+    totalReplies: number;
+    averageRepliesPerConversation: number;
+    topConversations: Array<{
+      conversationId: string;
+      totalEngagement: number;
+      replyCount: number;
+      originalTweet: string;
+    }>;
+  };
 }
 
 export interface CampaignContext {
@@ -109,6 +121,18 @@ Sentiment Distribution:
 Top Hashtags:
 ${data.hashtags.slice(0, 10).map(h => `- #${h.hashtag}: ${h.count} mentions`).join('\n')}
 
+${data.twitterAnalytics ? `
+Twitter Conversation Analytics:
+- Total Conversations: ${data.twitterAnalytics.totalConversations}
+- Total Replies: ${data.twitterAnalytics.totalReplies}
+- Average Replies per Conversation: ${data.twitterAnalytics.averageRepliesPerConversation.toFixed(1)}
+
+Top Twitter Conversations:
+${data.twitterAnalytics.topConversations.slice(0, 5).map((conv, index) => 
+  `${index + 1}. "${conv.originalTweet.substring(0, 100)}..." (${conv.replyCount} replies, ${conv.totalEngagement} engagement)`
+).join('\n')}
+` : ''}
+
 Sample Mentions (${sampleMentions.length} diverse examples):
 ${sampleMentions.map(m => {
   const content = m.content || m.text || 'No content';
@@ -120,7 +144,10 @@ ${sampleMentions.map(m => {
   // Show more content but still truncate very long ones
   const displayContent = content.length > 200 ? content.substring(0, 200) + '...' : content;
   
-  return `- ${platform} (${sentiment}, score: ${sentimentScore}): "${displayContent}" by ${author}`;
+  // Add Twitter-specific context
+  const twitterContext = m.isReply ? ' (Reply)' : m.conversationContext ? ` (${m.conversationContext.totalReplies} replies)` : '';
+  
+  return `- ${platform}${twitterContext} (${sentiment}, score: ${sentimentScore}): "${displayContent}" by ${author}`;
 }).join('\n')}
 `;
 
@@ -133,7 +160,16 @@ Please provide a comprehensive summary report including:
 2. Key Findings (3-5 bullet points)
 3. Platform Performance Analysis
 4. Sentiment Overview
-5. Notable Mentions or Trends
+5. ${data.twitterAnalytics ? 'Twitter Conversation Insights' : 'Notable Mentions or Trends'}
+6. ${data.twitterAnalytics ? 'Community Engagement Analysis' : 'Notable Mentions or Trends'}
+
+${data.twitterAnalytics ? `
+Focus on Twitter conversation insights:
+- Analyze conversation patterns and engagement
+- Identify high-engagement conversations
+- Highlight community interaction trends
+- Note reply-to-tweet ratios and engagement quality
+` : ''}
 
 Format the response as a professional report with clear sections.`;
 
@@ -146,7 +182,16 @@ Please provide a detailed sentiment analysis report including:
 3. Negative Sentiment Analysis (pain points, complaints)
 4. Neutral Sentiment Context
 5. Sentiment Trends by Platform
-6. Key Sentiment Drivers
+6. ${data.twitterAnalytics ? 'Sentiment in Twitter Conversations' : 'Key Sentiment Drivers'}
+7. ${data.twitterAnalytics ? 'Reply Sentiment Analysis' : 'Key Sentiment Drivers'}
+
+${data.twitterAnalytics ? `
+Include Twitter conversation sentiment insights:
+- Sentiment patterns in replies vs original tweets
+- Conversation sentiment evolution
+- High-engagement conversation sentiment analysis
+- Community sentiment dynamics
+` : ''}
 
 Focus on actionable insights from sentiment data.`;
 
@@ -159,7 +204,17 @@ Please identify and analyze trends in the data including:
 3. Temporal Patterns (time-based trends)
 4. Platform-Specific Trends
 5. Hashtag and Keyword Evolution
-6. Influencer or High-Impact Accounts
+6. ${data.twitterAnalytics ? 'Twitter Conversation Trends' : 'Influencer or High-Impact Accounts'}
+7. ${data.twitterAnalytics ? 'Community Engagement Patterns' : 'Influencer or High-Impact Accounts'}
+
+${data.twitterAnalytics ? `
+Analyze Twitter conversation trends:
+- Conversation virality patterns
+- Reply chain analysis
+- Community engagement trends
+- Conversation topic evolution
+- High-engagement conversation characteristics
+` : ''}
 
 Identify what's trending and why.`;
 
@@ -172,7 +227,17 @@ Based on this social media data, please provide actionable recommendations:
 3. Engagement Opportunities
 4. Crisis Management (if negative sentiment detected)
 5. Platform-Specific Strategies
-6. Long-term Strategic Recommendations
+6. ${data.twitterAnalytics ? 'Twitter Conversation Strategy' : 'Long-term Strategic Recommendations'}
+7. ${data.twitterAnalytics ? 'Community Engagement Tactics' : 'Long-term Strategic Recommendations'}
+
+${data.twitterAnalytics ? `
+Include Twitter conversation recommendations:
+- How to engage with high-conversation tweets
+- Reply strategy and community building
+- Conversation monitoring and response tactics
+- Engagement optimization based on conversation patterns
+- Community management strategies
+` : ''}
 
 Focus on practical, actionable advice.`;
 
@@ -194,18 +259,30 @@ Please provide a general analysis of this social media data.`;
       return mentions.slice(0, 5); // Fallback to original mentions
     }
 
-    // Try to get a diverse sample with different sentiments
-    const positive = filteredMentions.filter(m => m.sentiment === 'positive').slice(0, 2);
-    const negative = filteredMentions.filter(m => m.sentiment === 'negative').slice(0, 2);
-    const neutral = filteredMentions.filter(m => m.sentiment === 'neutral').slice(0, 2);
-    const unknown = filteredMentions.filter(m => !m.sentiment || m.sentiment === 'unknown').slice(0, 2);
+    // Separate Twitter mentions for special handling
+    const twitterMentions = filteredMentions.filter(m => m.platform === 'twitter');
+    const otherMentions = filteredMentions.filter(m => m.platform !== 'twitter');
 
-    // Combine and limit to 8 total
-    const diverseSample = [...positive, ...negative, ...neutral, ...unknown].slice(0, 8);
+    // For Twitter, ensure we get a mix of original tweets and replies
+    let twitterSample: any[] = [];
+    if (twitterMentions.length > 0) {
+      const originalTweets = twitterMentions.filter(m => !m.isReply).slice(0, 2);
+      const replies = twitterMentions.filter(m => m.isReply).slice(0, 2);
+      twitterSample = [...originalTweets, ...replies];
+    }
+
+    // For other platforms, get diverse sentiment samples
+    const positive = otherMentions.filter(m => m.sentiment === 'positive').slice(0, 2);
+    const negative = otherMentions.filter(m => m.sentiment === 'negative').slice(0, 2);
+    const neutral = otherMentions.filter(m => m.sentiment === 'neutral').slice(0, 2);
+    const unknown = otherMentions.filter(m => !m.sentiment || m.sentiment === 'unknown').slice(0, 2);
+
+    // Combine Twitter sample with other platform samples
+    const diverseSample = [...twitterSample, ...positive, ...negative, ...neutral, ...unknown].slice(0, 10);
     
     // If we don't have enough diverse samples, fill with remaining mentions
-    if (diverseSample.length < 8) {
-      const remaining = filteredMentions.filter(m => !diverseSample.includes(m)).slice(0, 8 - diverseSample.length);
+    if (diverseSample.length < 10) {
+      const remaining = filteredMentions.filter(m => !diverseSample.includes(m)).slice(0, 10 - diverseSample.length);
       diverseSample.push(...remaining);
     }
 
@@ -327,11 +404,30 @@ Please provide a general analysis of this social media data.`;
           platform: platform
         };
       case 'twitter':
-        const twitterContent = mention.content || mention.text || mention.postText || 'No content available';
+        // Handle both original tweets and replies with conversation context
+        // Part 1: full_text, user.screen_name, conversation_id_str
+        // Part 2: text, author.userName, conversationId, isReply
+        let twitterContent = mention.full_text || mention.text || mention.content || 'No content available';
+        let twitterAuthor = mention.author?.userName || mention.user?.screen_name || mention.author || 'Unknown';
+        
+        // Add conversation context for better LLM analysis
+        if (mention.isReply || (mention.inReplyToId && mention.inReplyToId !== mention.id)) {
+          // This is a reply - add context about the parent tweet
+          if (mention.inReplyToId || mention.parentTweetId) {
+            twitterContent = `Reply to tweet ${mention.inReplyToId || mention.parentTweetId}:\n${twitterContent}`;
+          }
+          if (mention.conversationContext?.parentTweet) {
+            twitterContent = `Reply to: "${mention.conversationContext.parentTweet.content?.substring(0, 100)}..."\n\n${twitterContent}`;
+          }
+        } else if (mention.conversationContext?.totalReplies) {
+          // This is an original tweet with replies
+          twitterContent = `${twitterContent}\n\n[This tweet has ${mention.conversationContext.totalReplies} replies and ${mention.conversationContext.totalEngagement} total engagement]`;
+        }
+        
         return {
-          id: mention.id || mention.url || mention.postUrl || String(Date.now()),
+          id: mention.id_str || mention.id || mention.conversation_id_str || mention.conversationId || String(Date.now()),
           content: twitterContent,
-          author: mention.author || mention.user || 'Unknown',
+          author: twitterAuthor,
           platform: platform
         };
       case 'reddit':
@@ -372,6 +468,18 @@ ${data.platforms.map(p => `- ${p.platform}: ${p.count} mentions`).join('\n')}
 - Positive: ${data.sentiment.positive}
 - Negative: ${data.sentiment.negative}
 - Neutral: ${data.sentiment.neutral}
+
+${data.twitterAnalytics ? `
+**Twitter Conversation Analytics:**
+- Total Conversations: ${data.twitterAnalytics.totalConversations}
+- Total Replies: ${data.twitterAnalytics.totalReplies}
+- Average Replies per Conversation: ${data.twitterAnalytics.averageRepliesPerConversation.toFixed(1)}
+
+**Top Twitter Conversations:**
+${data.twitterAnalytics.topConversations.slice(0, 3).map((conv, index) => 
+  `${index + 1}. "${conv.originalTweet.substring(0, 80)}..." (${conv.replyCount} replies, ${conv.totalEngagement} engagement)`
+).join('\n')}
+` : ''}
 `;
 
     switch (type) {
@@ -381,10 +489,19 @@ ${data.platforms.map(p => `- ${p.platform}: ${p.count} mentions`).join('\n')}
 ## Executive Summary
 This is a fallback summary report generated due to LLM service issues. The campaign collected ${data.totalMentions} mentions across ${data.platforms.length} platforms.
 
+${data.twitterAnalytics ? `
+## Twitter Conversation Insights
+- **${data.twitterAnalytics.totalConversations} conversations** tracked with full reply chains
+- **${data.twitterAnalytics.totalReplies} total replies** collected from community engagement
+- **${data.twitterAnalytics.averageRepliesPerConversation.toFixed(1)} average replies** per conversation
+- **High-engagement conversations** identified and tracked for community insights
+` : ''}
+
 ## Key Findings
 - Data collection completed successfully
 - ${data.platforms.length} platforms monitored
 - Sentiment distribution available
+${data.twitterAnalytics ? `- Twitter conversation analytics available with reply tracking` : ''}
 - Further analysis requires LLM service
 
 ## Next Steps
@@ -402,7 +519,14 @@ This is a fallback sentiment report. The data shows:
 ## Sentiment Ratio
 - Positive: ${((data.sentiment.positive / data.totalMentions) * 100).toFixed(1)}%
 - Negative: ${((data.sentiment.negative / data.totalMentions) * 100).toFixed(1)}%
-- Neutral: ${((data.sentiment.neutral / data.totalMentions) * 100).toFixed(1)}%`;
+- Neutral: ${((data.sentiment.neutral / data.totalMentions) * 100).toFixed(1)}%
+
+${data.twitterAnalytics ? `
+## Twitter Conversation Sentiment
+- Sentiment analysis available for ${data.twitterAnalytics.totalConversations} conversations
+- Reply sentiment tracking enabled for community insights
+- High-engagement conversation sentiment patterns identified
+` : ''}`;
 
       case 'trends':
         return `${baseInfo}
@@ -411,6 +535,14 @@ This is a fallback sentiment report. The data shows:
 This is a fallback trends report. Basic trend data:
 - Top hashtags: ${data.hashtags.slice(0, 5).map(h => `#${h.hashtag}`).join(', ')}
 - Platform activity: ${data.platforms.map(p => `${p.platform} (${p.count})`).join(', ')}
+
+${data.twitterAnalytics ? `
+## Twitter Conversation Trends
+- **${data.twitterAnalytics.topConversations.length} high-engagement conversations** identified
+- **Reply chain analysis** available for community trend tracking
+- **Conversation virality patterns** tracked across ${data.twitterAnalytics.totalConversations} conversations
+- **Community engagement trends** monitored with full reply data
+` : ''}
 
 ## Data Insights
 - Most active platform: ${data.platforms.sort((a, b) => b.count - a.count)[0]?.platform}
@@ -426,11 +558,13 @@ This is a fallback recommendations report based on basic metrics.
 - Monitor ${data.platforms.length} platforms for continued mentions
 - Track sentiment changes over time
 - Engage with high-engagement posts
+${data.twitterAnalytics ? `- Monitor ${data.twitterAnalytics.totalConversations} Twitter conversations for community engagement opportunities` : ''}
 
 ## Strategic Recommendations
 - Continue monitoring keywords: ${data.keywords.join(', ')}
 - Focus on platforms with highest mention volume
-- Address any negative sentiment promptly`;
+- Address any negative sentiment promptly
+${data.twitterAnalytics ? `- Leverage Twitter conversation insights for community building strategies` : ''}`;
 
       default:
         return `${baseInfo}

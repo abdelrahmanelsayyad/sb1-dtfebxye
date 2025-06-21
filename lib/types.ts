@@ -122,6 +122,7 @@ export interface SocialListeningCampaign {
   id: string;
   name: string;
   keywords: string[];
+  twitterUrls?: string[];
   platforms: string[];
   status: 'draft' | 'running' | 'completed' | 'failed';
   createdAt: Date;

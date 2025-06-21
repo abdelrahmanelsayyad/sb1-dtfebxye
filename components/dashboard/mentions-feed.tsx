@@ -19,10 +19,28 @@ interface Mention {
     likes?: number;
     comments?: number;
     shares?: number;
+    retweets?: number;
+    replies?: number;
   };
   url?: string;
   hashtags?: string[];
   sentiment?: 'positive' | 'negative' | 'neutral';
+  // Twitter-specific fields
+  conversationId?: string;
+  isReply?: boolean;
+  parentTweetId?: string;
+  conversationContext?: {
+    totalReplies?: number;
+    totalEngagement?: number;
+    parentTweet?: any;
+  };
+  userInfo?: {
+    username?: string;
+    displayName?: string;
+    verified?: boolean;
+    followersCount?: number;
+    followingCount?: number;
+  };
 }
 
 export function MentionsFeed() {
@@ -166,6 +184,11 @@ export function MentionsFeed() {
                     >
                       {getPlatformIcon(mention.platform)} {mention.platform}
                     </Badge>
+                    {mention.isReply && (
+                      <Badge variant="outline" className="text-xs bg-blue-100 text-blue-800 border-blue-200">
+                        Reply
+                      </Badge>
+                    )}
                     {mention.sentiment && (
                       <Badge 
                         variant="outline" 
@@ -179,6 +202,26 @@ export function MentionsFeed() {
                       {formatDate(mention.timestamp)}
                     </div>
                   </div>
+                  
+                  {/* Show conversation context for Twitter */}
+                  {mention.platform === 'twitter' && mention.conversationContext && (
+                    <div className="mb-2 p-2 bg-gray-50 dark:bg-gray-800 rounded text-xs">
+                      {mention.isReply ? (
+                        <div className="text-muted-foreground">
+                          Reply in conversation with {mention.conversationContext.totalReplies} total replies
+                          {mention.conversationContext.parentTweet && (
+                            <div className="mt-1 italic">
+                              Parent: {truncateContent(mention.conversationContext.parentTweet.content, 80)}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="text-muted-foreground">
+                          Original tweet • {mention.conversationContext.totalReplies} replies • {mention.conversationContext.totalEngagement} total engagement
+                        </div>
+                      )}
+                    </div>
+                  )}
                   
                   <p className="text-sm text-gray-700 dark:text-gray-300 mb-3">
                     {truncateContent(mention.content)}
@@ -202,13 +245,25 @@ export function MentionsFeed() {
                           <span>{mention.engagement.likes}</span>
                         </div>
                       )}
-                      {mention.engagement?.comments !== undefined && (
+                      {mention.engagement?.retweets !== undefined && (
+                        <div className="flex items-center space-x-1">
+                          <Share2 className="w-3 h-3" />
+                          <span>{mention.engagement.retweets}</span>
+                        </div>
+                      )}
+                      {mention.engagement?.replies !== undefined && (
+                        <div className="flex items-center space-x-1">
+                          <MessageCircle className="w-3 h-3" />
+                          <span>{mention.engagement.replies}</span>
+                        </div>
+                      )}
+                      {mention.engagement?.comments !== undefined && mention.platform !== 'twitter' && (
                         <div className="flex items-center space-x-1">
                           <MessageCircle className="w-3 h-3" />
                           <span>{mention.engagement.comments}</span>
                         </div>
                       )}
-                      {mention.engagement?.shares !== undefined && (
+                      {mention.engagement?.shares !== undefined && mention.platform !== 'twitter' && (
                         <div className="flex items-center space-x-1">
                           <Share2 className="w-3 h-3" />
                           <span>{mention.engagement.shares}</span>

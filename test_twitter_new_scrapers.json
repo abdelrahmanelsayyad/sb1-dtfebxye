@@ -1,0 +1,22 @@
+{
+  "name": "Test New Twitter Scrapers",
+  "keywords": ["test", "example"],
+  "twitterUrls": [
+    "https://twitter.com/VodafoneEgypt",
+    "https://twitter.com/search?q=test"
+  ],
+  "platforms": ["twitter"],
+  "settings": {
+    "twitterResultsLimit": 50,
+    "timeRangeMonths": 1,
+    "maxComments": 20
+  },
+  "socialHandles": {
+    "twitter": "https://twitter.com/VodafoneEgypt"
+  },
+  "generateReport": true,
+  "industry": "telecommunications",
+  "brandKeywords": ["vodafone", "mobile", "internet"],
+  "productKeywords": ["4g", "5g", "mobile data"],
+  "excludeKeywords": ["spam", "fake"]
+} 

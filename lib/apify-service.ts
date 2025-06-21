@@ -5,6 +5,7 @@ const APIFY_API_TOKEN = 'apify_api_ZrZ68W91FaRzCHSFiVEOZWNdH5facG0eeFRQ';
 export interface ApifyScraperConfig {
   query?: string;
   keywords?: string[];
+  twitterUrls?: string[]; // New field for Twitter URLs
   resultsCount?: number;
   timeWindow?: number;
   maxPosts?: number;
@@ -190,16 +191,14 @@ async function makeChunkedApiCall(
 }
 
 export class ApifyService {
-  // X (Twitter) Posts Search with async API
-  static async scrapeTwitterPosts(config: ApifyScraperConfig) {
-    const query = (config.keywords && config.keywords.length > 0) ? config.keywords[0] : '';
+  // Twitter/X Posts Scraper with Two-Part System
+  static async scrapeTwitterWithReplies(config: ApifyScraperConfig) {
+    const twitterUrls = config.twitterUrls;
     
-    if (!query || query.trim() === '') {
-      console.warn('No query provided for Twitter scraping, skipping');
+    if (!twitterUrls || twitterUrls.length === 0) {
+      console.warn('No Twitter URLs provided, skipping Twitter scraping');
       return [];
     }
-    
-    const truncatedQuery = query.substring(0, 30); // Ensure 30 char limit
     
     // Use platform-specific limit or fallback to default
     const resultsLimit = Math.min(
@@ -207,32 +206,44 @@ export class ApifyService {
       200
     );
     
-    // Calculate time window based on months (30 days per month)
-    const timeWindow = config.timeRangeMonths ? config.timeRangeMonths * 30 : (config.timeWindow || 30);
+    // Calculate since_date based on timeRangeMonths
+    const sinceDate = this.calculateSinceDate(config.timeRangeMonths || 1);
     
-    const input = {
-      query: truncatedQuery,
-      resultsCount: resultsLimit,
-      searchType: "latest",
-      timeWindow: timeWindow
-    };
-
     console.log('Starting Twitter scraping with config:', { 
-      query: truncatedQuery, 
-      resultsCount: input.resultsCount,
-      timeWindow: input.timeWindow,
+      twitterUrls, 
+      resultsLimit,
+      sinceDate,
       timeRangeMonths: config.timeRangeMonths
     });
 
     try {
-      const data = await makeChunkedApiCall(
-        'scraper_one~x-posts-search',
-        input,
-        50 // Standard chunk size for Twitter
-      );
+      // PART 1: Get tweets from URLs
+      const tweetsData = await this.scrapeTwitterTweets(config, resultsLimit, sinceDate);
       
-      console.log('Twitter scraping successful, got data:', data);
-      return this.processTwitterData(data);
+      if (!tweetsData || tweetsData.length === 0) {
+        console.log('No tweets found from Part 1, returning empty results');
+        return [];
+      }
+      
+      // Extract conversation IDs from tweets
+      const conversationIds = this.extractConversationIds(tweetsData);
+      
+      if (conversationIds.length === 0) {
+        console.log('No conversation IDs found, returning tweets only');
+        return this.processTwitterData(tweetsData);
+      }
+      
+      console.log(`Found ${conversationIds.length} conversation IDs, proceeding to Part 2`);
+      
+      // PART 2: Get replies for conversation IDs
+      const repliesData = await this.scrapeTwitterReplies(conversationIds, config.maxComments || CONFIG.MAX_COMMENTS_PER_POST);
+      
+      // Combine tweets and replies data
+      const combinedData = [...tweetsData, ...repliesData];
+      
+      console.log('Twitter scraping successful, got data:', combinedData);
+      return this.processTwitterData(combinedData);
+      
     } catch (error) {
       console.error('Twitter scraping error:', error);
       
@@ -241,7 +252,7 @@ export class ApifyService {
         if (error.message.includes('timed out')) {
           throw new Error(`Twitter scraping timed out. This can happen due to Twitter's rate limiting or Apify's 5-minute timeout limit. Try reducing resultsCount or try again later.`);
         } else if (error.message.includes('403') || error.message.includes('401')) {
-          throw new Error(`Twitter scraping failed due to access restrictions. The query may be blocked or require authentication.`);
+          throw new Error(`Twitter scraping failed due to access restrictions. The Twitter URLs may be blocked or require authentication.`);
         } else if (error.message.includes('Apify run failed')) {
           throw new Error(`Apify service failed: ${error.message}. This may be due to Twitter's anti-scraping measures.`);
         }
@@ -249,6 +260,99 @@ export class ApifyService {
       
       throw error;
     }
+  }
+
+  // PART 1: Scrape tweets from URLs
+  private static async scrapeTwitterTweets(config: ApifyScraperConfig, resultsLimit: number, sinceDate: string) {
+    const twitterUrls = config.twitterUrls!;
+    
+    // Prepare start_urls array
+    const startUrls = twitterUrls.map(url => ({
+      url: url,
+      method: "GET"
+    }));
+    
+    const input = {
+      result_count: resultsLimit.toString(),
+      since_date: sinceDate,
+      start_urls: startUrls
+    };
+
+    console.log('Part 1 - Twitter tweets scraping input:', input);
+
+    try {
+      const data = await makeChunkedApiCall(
+        'gentle_cloud~twitter-tweets-scraper',
+        input,
+        50 // Standard chunk size for Twitter
+      );
+      
+      console.log('Part 1 - Twitter tweets scraping successful, got data:', data);
+      return data;
+    } catch (error) {
+      console.error('Part 1 - Twitter tweets scraping error:', error);
+      throw error;
+    }
+  }
+
+  // PART 2: Scrape replies for conversation IDs
+  private static async scrapeTwitterReplies(conversationIds: string[], maxItemsPerConversation: number) {
+    if (conversationIds.length === 0) {
+      return [];
+    }
+    
+    const input = {
+      conversation_ids: conversationIds,
+      max_items_per_conversation: maxItemsPerConversation
+    };
+
+    console.log('Part 2 - Twitter replies scraping input:', input);
+
+    try {
+      const data = await makeAsyncApiCall(
+        'kaitoeasyapi~twitter-reply',
+        input,
+        300000 // 5 minutes timeout
+      );
+      
+      console.log('Part 2 - Twitter replies scraping successful, got data:', data);
+      return data;
+    } catch (error) {
+      console.error('Part 2 - Twitter replies scraping error:', error);
+      throw error;
+    }
+  }
+
+  // Helper method to calculate since_date
+  private static calculateSinceDate(months: number): string {
+    const today = new Date();
+    const daysToSubtract = months * 30;
+    const sinceDate = new Date(today.getTime() - (daysToSubtract * 24 * 60 * 60 * 1000));
+    
+    // Format as YYYY-MM-DD
+    const year = sinceDate.getFullYear();
+    const month = String(sinceDate.getMonth() + 1).padStart(2, '0');
+    const day = String(sinceDate.getDate()).padStart(2, '0');
+    
+    return `${year}-${month}-${day}`;
+  }
+
+  // Helper method to extract conversation IDs from tweets data
+  private static extractConversationIds(tweetsData: any[]): string[] {
+    const conversationIds: string[] = [];
+    
+    for (const tweet of tweetsData) {
+      // Extract conversation ID from tweet data
+      // Part 1 uses conversation_id_str, Part 2 uses conversationId
+      const conversationId = tweet.conversation_id_str || tweet.conversationId || tweet.id_str || tweet.id;
+      
+      if (conversationId && !conversationIds.includes(conversationId)) {
+        conversationIds.push(conversationId);
+      }
+    }
+    
+    console.log(`Extracted ${conversationIds.length} unique conversation IDs`);
+    return conversationIds;
   }
 
   // Instagram Scraper with async API
@@ -571,24 +675,70 @@ export class ApifyService {
 
   // Data processing functions
   static processTwitterData(data: any[]) {
-    return data.map(item => ({
-      platform: 'twitter',
-      content: item.postText || item.text || item.full_text || 'No content available',
-      author: item.author?.name || item.author?.screenName || item.user?.name || 'Unknown',
-      timestamp: item.timestamp || item.created_at || Date.now(),
-      url: item.postUrl || item.url || '',
-      engagement: {
-        likes: item.favouriteCount || item.likeCount || 0,
-        retweets: item.repostCount || item.retweetCount || 0,
-        replies: item.replyCount || 0
-      },
-      sentiment: item.sentiment || 'neutral',
-      sentimentScore: item.sentimentScore || 0.5,
-      keyTopics: item.keyTopics || [],
-      engagementQuality: item.engagementQuality || 'low',
-      insights: item.insights || '',
-      ...item // Keep original data
-    }));
+    return data.map(item => {
+      // Handle both tweet data (from Part 1) and reply data (from Part 2)
+      // Part 1: uses conversation_id_str, full_text, user.screen_name, etc.
+      // Part 2: uses conversationId, text, author.userName, etc.
+      const isReply = item.isReply || (item.inReplyToId && item.inReplyToId !== item.id);
+      
+      // Extract content based on scraper output
+      const content = item.full_text || item.text || item.postText || item.content || 'No content available';
+      
+      // Extract author based on scraper output
+      const author = item.author?.userName || item.author?.screen_name || item.user?.screen_name || item.username || item.author_username || 'Unknown';
+      
+      // Extract conversation ID based on scraper output
+      const conversationId = item.conversation_id_str || item.conversationId || item.id_str || item.id;
+      
+      // Extract engagement metrics based on scraper output
+      const likes = item.favorite_count || item.likeCount || item.likes || item.favouriteCount || 0;
+      const retweets = item.retweet_count || item.retweetCount || item.retweets || 0;
+      const replies = item.reply_count || item.replyCount || item.replies || 0;
+      
+      // Extract user info based on scraper output
+      const userInfo = {
+        username: item.author?.userName || item.user?.screen_name || item.username || '',
+        displayName: item.author?.name || item.user?.name || item.display_name || '',
+        verified: item.author?.isVerified || item.user?.verified || false,
+        followersCount: item.author?.followers || item.user?.followers_count || 0,
+        followingCount: item.author?.following || item.user?.friends_count || 0
+      };
+      
+      return {
+        platform: 'twitter',
+        // Content fields
+        content: content,
+        author: author,
+        timestamp: item.created_at || item.createdAt || item.timestamp || Date.now(),
+        url: item.url || item.postUrl || '',
+        
+        // Engagement metrics
+        engagement: {
+          likes: likes,
+          retweets: retweets,
+          replies: replies
+        },
+        
+        // Conversation and reply data
+        conversationId: conversationId,
+        isReply: isReply,
+        parentTweetId: item.inReplyToId || item.parent_tweet_id || null,
+        replyChain: item.reply_chain || item.replyChain || [],
+        
+        // User information
+        userInfo: userInfo,
+        
+        // Sentiment and analysis
+        sentiment: item.sentiment || 'neutral',
+        sentimentScore: item.sentimentScore || 0.5,
+        keyTopics: item.keyTopics || [],
+        engagementQuality: item.engagementQuality || 'low',
+        insights: item.insights || '',
+        
+        // Original data
+        ...item
+      };
+    });
   }
 
   static processInstagramData(data: any[]) {
